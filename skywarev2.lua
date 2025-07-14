@@ -1,5 +1,6 @@
 if not game:IsLoaded() then game.Loaded:Wait() end
 
+local OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/shlexware/Orion/main/source"))()
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
@@ -12,7 +13,7 @@ local ESPEnabled, TeamCheckESP = false, true
 local BoxESP, SkeletonESP = false, false
 local ESPColor = Color3.fromRGB(0, 255, 0)
 
-local AimbotEnabled, TeamCheckAimbot, FOVCircleEnabled, SilentAimEnabled = false, true, true, false
+local AimbotEnabled, TeamCheckAimbot, FOVCircleEnabled = false, true, true
 local Smoothness, FOVRadius = 0.2, 120
 local AimPart = "Head"
 local AimbotKey = Enum.UserInputType.MouseButton2
@@ -71,8 +72,8 @@ local function UpdateESP()
         if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") and (not TeamCheckESP or IsEnemy(player)) then
             if not ESPObjects[player] then CreateESP(player) end
 
-            local root = player.Character:FindFirstChild("HumanoidRootPart")
-            local head = player.Character:FindFirstChild("Head")
+            local root = player.Character.HumanoidRootPart
+            local head = player.Character.Head
             local torso = player.Character:FindFirstChild("UpperTorso") or player.Character:FindFirstChild("Torso")
             if root and head and torso then
                 local pos, onscreen = Camera:WorldToViewportPoint(root.Position)
@@ -86,7 +87,6 @@ local function UpdateESP()
                         ESPObjects[player].Box.Size = Vector2.new(math.abs(topLeft.X - bottomRight.X), math.abs(topLeft.Y - bottomRight.Y))
                         ESPObjects[player].Box.Position = Vector2.new(math.min(topLeft.X, bottomRight.X), math.min(topLeft.Y, bottomRight.Y))
                         ESPObjects[player].Box.Thickness = 2
-                        ESPObjects[player].Box.Transparency = 1
                         ESPObjects[player].Box.Filled = false
                     else
                         ESPObjects[player].Box.Visible = false
@@ -159,7 +159,6 @@ end
 UserInputService.InputBegan:Connect(function(input)
     if input.UserInputType == AimbotKey then Holding = true end
 end)
-
 UserInputService.InputEnded:Connect(function(input)
     if input.UserInputType == AimbotKey then Holding = false end
 end)
@@ -199,60 +198,41 @@ RunService.RenderStepped:Connect(function()
     UpdateESP()
 end)
 
-local Rayfield = loadstring(game:HttpGet("https://raw.githubusercontent.com/shlexware/Rayfield/main/source"))()
+-- Orion UI Setup
+local Window = OrionLib:MakeWindow({Name = "SkyWare V2 - Arsenal", HidePremium = false, SaveConfig = true, ConfigFolder = "SkyWareV2"})
 
-local Window = Rayfield:CreateWindow({
-    Name = "SkyWare V2 - Arsenal",
-    LoadingTitle = "SkyWare V2",
-    LoadingSubtitle = "by SkyTeam",
-    ConfigurationSaving = {
-        Enabled = true,
-        FolderName = "SkyWareV2",
-        FileName = "ArsenalConfig"
-    },
-    Discord = {
-        Enabled = false,
-    },
-    KeySystem = false,
-})
+-- Visuals Tab
+local VisualsTab = Window:MakeTab({Name = "Visuals", Icon = "rbxassetid://4483345998", PremiumOnly = false})
+VisualsTab:AddToggle({Name = "Enable ESP", Default = false, Callback = function(val) ESPEnabled = val end})
+VisualsTab:AddToggle({Name = "Team Check", Default = true, Callback = function(val) TeamCheckESP = val end})
+VisualsTab:AddToggle({Name = "Box ESP", Default = false, Callback = function(val) BoxESP = val end})
+VisualsTab:AddToggle({Name = "Skeleton ESP", Default = false, Callback = function(val) SkeletonESP = val end})
+VisualsTab:AddColorpicker({Name = "ESP Color", Default = ESPColor, Callback = function(val) ESPColor = val end})
 
-local VisualTab = Window:CreateTab("Visuals", 4483362458)
-local AimbotTab = Window:CreateTab("Aimbot", 4483362458)
-local ExploitsTab = Window:CreateTab("Exploits", 4483362458)
-local MiscTab = Window:CreateTab("Misc", 4483362458)
-local CreditsTab = Window:CreateTab("Credits", 4483362458)
+-- Aimbot Tab
+local AimbotTab = Window:MakeTab({Name = "Aimbot", Icon = "rbxassetid://4483345998", PremiumOnly = false})
+AimbotTab:AddToggle({Name = "Enable Aimbot", Default = false, Callback = function(val) AimbotEnabled = val end})
+AimbotTab:AddToggle({Name = "Team Check", Default = true, Callback = function(val) TeamCheckAimbot = val end})
+AimbotTab:AddSlider({Name = "Smoothness", Min = 0, Max = 1, Default = 0.2, Increment = 0.01, Callback = function(val) Smoothness = val end})
+AimbotTab:AddSlider({Name = "FOV Radius", Min = 50, Max = 300, Default = 120, Increment = 1, Callback = function(val) FOVRadius = val end})
+AimbotTab:AddDropdown({Name = "Aim Part", Options = {"Head", "Torso"}, Default = "Head", Callback = function(val) AimPart = val end})
+AimbotTab:AddToggle({Name = "Show FOV Circle", Default = true, Callback = function(val) FOVCircleEnabled = val end})
 
--- Visual
-VisualTab:CreateToggle("Enable ESP", nil, function(val) ESPEnabled = val end)
-VisualTab:CreateToggle("Team Check", nil, function(val) TeamCheckESP = val end)
-VisualTab:CreateToggle("Box ESP", nil, function(val) BoxESP = val end)
-VisualTab:CreateToggle("Skeleton ESP", nil, function(val) SkeletonESP = val end)
-VisualTab:CreateColorPicker("ESP Color", ESPColor, function(val) ESPColor = val end)
+-- Exploits Tab
+local ExploitsTab = Window:MakeTab({Name = "Exploits", Icon = "rbxassetid://4483345998", PremiumOnly = false})
+ExploitsTab:AddToggle({Name = "God Mode", Default = false, Callback = function(val) GodMode = val end})
+ExploitsTab:AddSlider({Name = "Walk Speed", Min = 16, Max = 250, Default = 16, Increment = 1, Callback = function(val) WalkSpeed = val end})
+ExploitsTab:AddSlider({Name = "Jump Power", Min = 50, Max = 250, Default = 50, Increment = 1, Callback = function(val) JumpPower = val end})
 
--- Aimbot
-AimbotTab:CreateToggle("Enable Aimbot", nil, function(val) AimbotEnabled = val end)
-AimbotTab:CreateToggle("Team Check", nil, function(val) TeamCheckAimbot = val end)
-AimbotTab:CreateSlider("Smoothness", 0, 1, 0.2, false, function(val) Smoothness = val end)
-AimbotTab:CreateSlider("FOV Radius", 50, 300, 120, false, function(val) FOVRadius = val end)
-AimbotTab:CreateKeybind("Aimbot Key", Enum.KeyCode.MouseButton2, function() end)
-AimbotTab:CreateDropdown("Aim Part", {"Head", "Torso"}, function(val) AimPart = val end)
-AimbotTab:CreateToggle("Show FOV Circle", nil, function(val) FOVCircleEnabled = val end)
+-- Misc Tab
+local MiscTab = Window:MakeTab({Name = "Misc", Icon = "rbxassetid://4483345998", PremiumOnly = false})
+MiscTab:AddButton({Name = "Rejoin", Callback = function() TeleportService:Teleport(game.PlaceId, LocalPlayer) end})
+MiscTab:AddButton({Name = "Unload UI", Callback = function() OrionLib:Destroy(); FOVCircle:Remove(); TextLabel:Remove() end})
+MiscTab:AddButton({Name = "Unlock FPS", Callback = function() setfpscap(360) end})
+MiscTab:AddKeybind({Name = "Toggle UI", Default = Enum.KeyCode.RightShift, Hold = false, Callback = function() OrionLib:Toggle() end})
 
--- Exploits
-ExploitsTab:CreateToggle("God Mode", nil, function(val) GodMode = val end)
-ExploitsTab:CreateSlider("Walk Speed", 16, 250, 16, false, function(val) WalkSpeed = val end)
-ExploitsTab:CreateSlider("Jump Power", 50, 250, 50, false, function(val) JumpPower = val end)
+-- Credits Tab
+local CreditsTab = Window:MakeTab({Name = "Credits", Icon = "rbxassetid://4483345998", PremiumOnly = false})
+CreditsTab:AddParagraph("SkyWare V2", "Script by SkyTeam\nVersion: Orion Final Pro")
 
--- Misc
-MiscTab:CreateButton("Rejoin", function() TeleportService:Teleport(game.PlaceId, LocalPlayer) end)
-MiscTab:CreateButton("Unload UI", function() Rayfield:Destroy(); FOVCircle:Remove(); TextLabel:Remove() end)
-MiscTab:CreateToggle("Crosshair", nil, function(val) game:GetService("StarterGui"):SetCore("ToggleMouseIcon", val) end)
-MiscTab:CreateButton("Unlock FPS", function() setfpscap(360) end)
-MiscTab:CreateColorPicker("UI Color", Color3.fromRGB(44, 120, 224), function(color) Rayfield:ChangeTheme(color) end)
-MiscTab:CreateKeybind("Toggle UI", Enum.KeyCode.RightShift, function() Rayfield:Toggle() end)
-
--- Credits
-CreditsTab:CreateLabel("Script by SkyWare Team")
-CreditsTab:CreateLabel("Version: Final Pro Rayfield")
-
-print("✅ SkyWare V2 - Arsenal Pro Version Loaded (Rayfield UI)!")
+print("✅ SkyWare V2 - Arsenal FINAL PRO Orion UI Loaded!")
