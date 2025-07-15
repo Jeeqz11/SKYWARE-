@@ -1,4 +1,4 @@
--- SkyWare V2 Arsenal FULL Cheat 💜
+-- SkyWare V2 Arsenal FULL Cheat 💜 (Fixed Execution)
 
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
@@ -9,6 +9,9 @@ local UIS = game:GetService("UserInputService")
 local ESPEnabled, EnemyOnly, AimbotEnabled = true, true, true
 local ESPObjects = {}
 local AimPart, Holding, FOVRadius, Smoothness = "Head", false, 150, 0.2
+
+-- Fix: Wait for character to load
+repeat task.wait() until LocalPlayer and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
 
 -- Clear ESP
 local function ClearESP()
@@ -119,8 +122,7 @@ local function EnableGodMode()
     end
 end
 
--- Enable exploits
 EnableInfiniteJump()
 EnableGodMode()
 
-print("✅ SkyWare V2 FULL Cheat loaded: ESP, Aimbot, GodMode, Infinite Jump!")
+print("✅ SkyWare V2 FULL Cheat fixed and fully loaded!")
