@@ -1,4 +1,4 @@
--- ✅ Full SkyWare V2 Arsenal script with updated full-body ESP integrated
+-- ✅ Full SkyWare V2 Arsenal Script (Final Full Version)
 
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 local Window = Rayfield:CreateWindow({
@@ -20,7 +20,7 @@ local Camera = workspace.CurrentCamera
 local UIS = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 
-local AimbotEnabled, BoxESPEnabled, FOVRadius, Smoothness, NameESPEnabled, TracerESPEnabled = true, true, 150, 0.3, true, true
+local AimbotEnabled, BoxESPEnabled, FOVRadius, NameESPEnabled, TracerESPEnabled = true, true, 150, true, true
 local AimPart, Holding = "Head", false
 
 local FOVCircle = Drawing.new("Circle")
@@ -34,10 +34,8 @@ local ESPObjects = {}
 
 local function ClearESP()
     for _, obj in pairs(ESPObjects) do
-        if obj then
-            for _, v in pairs(obj) do
-                if v and v.Remove then v:Remove() end
-            end
+        for _, v in pairs(obj) do
+            if v and v.Remove then v:Remove() end
         end
     end
     ESPObjects = {}
@@ -73,7 +71,7 @@ RunService.RenderStepped:Connect(function()
     if AimbotEnabled and Holding then
         local target = GetClosestTarget()
         if target and target.Character and target.Character:FindFirstChild(AimPart) then
-            Camera.CFrame = Camera.CFrame:Lerp(CFrame.new(Camera.CFrame.Position, target.Character[AimPart].Position), Smoothness)
+            Camera.CFrame = CFrame.new(Camera.CFrame.Position, target.Character[AimPart].Position)
         end
     end
     local mouse = UIS:GetMouseLocation()
@@ -122,29 +120,25 @@ local function UpdateESP()
                 local height = math.abs(footPos.Y - headPos.Y)
                 local width = height / 2
 
-                local box = ESPObjects[player].Box
-                box.Size = Vector2.new(width, height)
-                box.Position = Vector2.new(headPos.X - width / 2, headPos.Y)
-                box.Visible = true
+                ESPObjects[player].Box.Size = Vector2.new(width, height)
+                ESPObjects[player].Box.Position = Vector2.new(headPos.X - width / 2, headPos.Y)
+                ESPObjects[player].Box.Visible = true
 
-                local name = ESPObjects[player].Name
-                name.Position = Vector2.new(headPos.X, headPos.Y - 18)
-                name.Text = player.Name
-                name.Visible = NameESPEnabled
+                ESPObjects[player].Name.Position = Vector2.new(headPos.X, headPos.Y - 18)
+                ESPObjects[player].Name.Text = player.Name
+                ESPObjects[player].Name.Visible = NameESPEnabled
 
-                local tracer = ESPObjects[player].Tracer
-                tracer.From = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y)
-                tracer.To = Vector2.new(rootPos.X, rootPos.Y)
-                tracer.Visible = TracerESPEnabled
+                ESPObjects[player].Tracer.From = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y)
+                ESPObjects[player].Tracer.To = Vector2.new(rootPos.X, rootPos.Y)
+                ESPObjects[player].Tracer.Visible = TracerESPEnabled
 
-                local health = ESPObjects[player].Health
                 local humanoid = player.Character:FindFirstChildOfClass("Humanoid")
                 if humanoid then
-                    health.Text = "HP: " .. math.floor(humanoid.Health)
-                    health.Position = Vector2.new(headPos.X, footPos.Y + 10)
-                    health.Visible = true
+                    ESPObjects[player].Health.Text = "HP: " .. math.floor(humanoid.Health)
+                    ESPObjects[player].Health.Position = Vector2.new(headPos.X, footPos.Y + 10)
+                    ESPObjects[player].Health.Visible = true
                 else
-                    health.Visible = false
+                    ESPObjects[player].Health.Visible = false
                 end
             else
                 ESPObjects[player].Box.Visible = false
@@ -163,10 +157,8 @@ end
 
 RunService.RenderStepped:Connect(UpdateESP)
 
--- UI Controls
 CombatTab:CreateToggle({ Name = "Aimbot (Hold RMB)", CurrentValue = AimbotEnabled, Callback = function(Value) AimbotEnabled = Value end })
 CombatTab:CreateSlider({ Name = "FOV Radius", Range = {50, 300}, Increment = 1, CurrentValue = FOVRadius, Callback = function(Value) FOVRadius = Value; FOVCircle.Radius = Value end })
-CombatTab:CreateSlider({ Name = "Smoothness", Range = {0, 1}, Increment = 0.05, CurrentValue = Smoothness, Callback = function(Value) Smoothness = Value end })
 
 VisualTab:CreateToggle({ Name = "ESP Boxes", CurrentValue = BoxESPEnabled, Callback = function(Value) BoxESPEnabled = Value end })
 VisualTab:CreateToggle({ Name = "ESP Names", CurrentValue = NameESPEnabled, Callback = function(Value) NameESPEnabled = Value end })
@@ -174,6 +166,6 @@ VisualTab:CreateToggle({ Name = "ESP Tracers", CurrentValue = TracerESPEnabled, 
 VisualTab:CreateToggle({ Name = "FOV Circle", CurrentValue = true, Callback = function(Value) FOVCircle.Visible = Value end })
 
 MiscTab:CreateKeybind({ Name = "Toggle UI", CurrentKeybind = "RightControl", HoldToInteract = false, Callback = function() Rayfield:Toggle() end })
-MiscTab:CreateParagraph({ Title = "SkyWare V2 💜", Content = "Aimbot & Full-Body ESP with Names, Tracers, Health\nStable & Optimized 💜" })
+MiscTab:CreateParagraph({ Title = "SkyWare V2 💜", Content = "Aimbot (Hard Lock) & Full-Body ESP with Names, Tracers, Health\nFinal Stable Version 💜" })
 
-print("✅ SkyWare V2 (Full reworked with full-body ESP) loaded!")
+print("✅ SkyWare V2 Fully Loaded with 100% Lock-On & Reworked ESP!")
