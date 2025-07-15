@@ -1,4 +1,4 @@
--- ✅ SkyWare V3 Arsenal Script (With Trigger Bot)
+-- ✅ SkyWare V3 Arsenal Script (With Trigger Bot + Silent Aim)
 
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 local Window = Rayfield:CreateWindow({
@@ -20,7 +20,7 @@ local Camera = workspace.CurrentCamera
 local UIS = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 
-local AimbotEnabled, BoxESPEnabled, FOVRadius, NameESPEnabled, TracerESPEnabled = true, true, 150, true, true
+local AimbotEnabled, SilentAimEnabled, BoxESPEnabled, FOVRadius, NameESPEnabled, TracerESPEnabled = true, false, true, 150, true, true
 local TriggerBotEnabled, TriggerDelay = false, 0.05
 local AimPart, Holding = "Head", false
 
@@ -68,6 +68,22 @@ UIS.InputEnded:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton2 then Holding = false end
 end)
 
+-- Silent Aim hook
+local __namecall
+__namecall = hookmetamethod(game, "__namecall", function(self, ...)
+    local args = {...}
+    local method = getnamecallmethod()
+    if SilentAimEnabled and tostring(method) == "FindPartOnRayWithIgnoreList" then
+        local target = GetClosestTarget()
+        if target and target.Character and target.Character:FindFirstChild(AimPart) then
+            local headPos = target.Character[AimPart].Position
+            args[1] = Ray.new(Camera.CFrame.Position, (headPos - Camera.CFrame.Position).Unit * 1000)
+            return __namecall(self, unpack(args))
+        end
+    end
+    return __namecall(self, ...)
+end)
+
 RunService.RenderStepped:Connect(function()
     if AimbotEnabled and Holding then
         local target = GetClosestTarget()
@@ -79,36 +95,10 @@ RunService.RenderStepped:Connect(function()
     FOVCircle.Position = Vector2.new(mouse.X, mouse.Y)
 end)
 
-local function GetTargetUnderCrosshair()
-    local mousePos = UIS:GetMouseLocation()
-    for _, player in ipairs(Players:GetPlayers()) do
-        if player ~= LocalPlayer and player.Team ~= LocalPlayer.Team and player.Character and player.Character:FindFirstChild("Head") then
-            local pos, onScreen = Camera:WorldToViewportPoint(player.Character.Head.Position)
-            if onScreen and (Vector2.new(pos.X, pos.Y) - Vector2.new(mousePos.X, mousePos.Y)).Magnitude < 10 then
-                return player
-            end
-        end
-    end
-    return nil
-end
-
-RunService.RenderStepped:Connect(function()
-    if TriggerBotEnabled then
-        local target = GetTargetUnderCrosshair()
-        if target then
-            mouse1press()
-            wait(TriggerDelay)
-            mouse1release()
-        end
-    end
-end)
-
 local function UpdateESP()
     if not BoxESPEnabled then ClearESP() return end
-
     for _, player in ipairs(Players:GetPlayers()) do
         if player ~= LocalPlayer and player.Team ~= LocalPlayer.Team and player.Character and player.Character:FindFirstChild("HumanoidRootPart") and player.Character:FindFirstChild("Head") then
-
             if not ESPObjects[player] then
                 ESPObjects[player] = {
                     Box = Drawing.new("Square"),
@@ -116,7 +106,6 @@ local function UpdateESP()
                     Tracer = Drawing.new("Line"),
                     Health = Drawing.new("Text")
                 }
-
                 ESPObjects[player].Box.Color = Color3.fromRGB(255, 0, 0)
                 ESPObjects[player].Box.Thickness = 2
                 ESPObjects[player].Box.Filled = false
@@ -182,7 +171,22 @@ end
 
 RunService.RenderStepped:Connect(UpdateESP)
 
+RunService.RenderStepped:Connect(function()
+    if TriggerBotEnabled then
+        local target = GetClosestTarget()
+        if target and target.Character and target.Character:FindFirstChild("Head") then
+            local pos, onScreen = Camera:WorldToViewportPoint(target.Character.Head.Position)
+            if SilentAimEnabled or (onScreen and not SilentAimEnabled) then
+                mouse1press()
+                wait(TriggerDelay)
+                mouse1release()
+            end
+        end
+    end
+end)
+
 CombatTab:CreateToggle({ Name = "Aimbot (Hold RMB)", CurrentValue = AimbotEnabled, Callback = function(Value) AimbotEnabled = Value end })
+CombatTab:CreateToggle({ Name = "Silent Aim", CurrentValue = SilentAimEnabled, Callback = function(Value) SilentAimEnabled = Value end })
 CombatTab:CreateToggle({ Name = "Trigger Bot", CurrentValue = TriggerBotEnabled, Callback = function(Value) TriggerBotEnabled = Value end })
 CombatTab:CreateSlider({ Name = "FOV Radius", Range = {50, 300}, Increment = 1, CurrentValue = FOVRadius, Callback = function(Value) FOVRadius = Value; FOVCircle.Radius = Value end })
 
@@ -192,6 +196,6 @@ VisualTab:CreateToggle({ Name = "ESP Tracers", CurrentValue = TracerESPEnabled, 
 VisualTab:CreateToggle({ Name = "FOV Circle", CurrentValue = true, Callback = function(Value) FOVCircle.Visible = Value end })
 
 MiscTab:CreateKeybind({ Name = "Toggle UI", CurrentKeybind = "RightControl", HoldToInteract = false, Callback = function() Rayfield:Toggle() end })
-MiscTab:CreateParagraph({ Title = "SkyWare V3 💜", Content = "Aimbot (Hard Lock), Trigger Bot, Full-Body ESP with Names, Tracers, Real-Time Health\nFinal V3 Edition 💜" })
+MiscTab:CreateParagraph({ Title = "SkyWare V3 💜", Content = "Aimbot (Hard Lock), Silent Aim, Trigger Bot, Full-Body ESP with Names, Tracers, Real-Time Health\nFinal V3 Edition 💜" })
 
-print("✅ SkyWare V3 Fully Loaded with Trigger Bot, Real-Time Health Bar & Hard Lock!")
+print("✅ SkyWare V3 Fully Loaded with Silent Aim, Trigger Bot, Real-Time Health Bar & Hard Lock!")
