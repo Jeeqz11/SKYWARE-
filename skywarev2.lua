@@ -1,4 +1,4 @@
--- ✅ Full SkyWare V2 Arsenal Script (Final Full Version)
+-- ✅ Full SkyWare V2 Arsenal Script (Final with Real-Time Health Bar)
 
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 local Window = Rayfield:CreateWindow({
@@ -166,6 +166,6 @@ VisualTab:CreateToggle({ Name = "ESP Tracers", CurrentValue = TracerESPEnabled, 
 VisualTab:CreateToggle({ Name = "FOV Circle", CurrentValue = true, Callback = function(Value) FOVCircle.Visible = Value end })
 
 MiscTab:CreateKeybind({ Name = "Toggle UI", CurrentKeybind = "RightControl", HoldToInteract = false, Callback = function() Rayfield:Toggle() end })
-MiscTab:CreateParagraph({ Title = "SkyWare V2 💜", Content = "Aimbot (Hard Lock) & Full-Body ESP with Names, Tracers, Health\nFinal Stable Version 💜" })
+MiscTab:CreateParagraph({ Title = "SkyWare V2 💜", Content = "Aimbot (Hard Lock) & Full-Body ESP with Names, Tracers, Real-Time Health\nFinal Stable Version 💜" })
 
-print("✅ SkyWare V2 Fully Loaded with 100% Lock-On & Reworked ESP!")
+print("✅ SkyWare V2 Fully Loaded with Real-Time Health Bar & 100% Lock-On!")
