@@ -1,33 +1,25 @@
--- SkyWare V2 💜 Arsenal (Stable Exploits Only)
+-- SkyWare V2 💜 Arsenal (Full script with reworked 2D ESP)
 
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 local Window = Rayfield:CreateWindow({
     Name = "SkyWare V2 - Arsenal",
     LoadingTitle = "SKYWARE 💜",
     LoadingSubtitle = "by Jeeqz11",
-    ConfigurationSaving = {
-        Enabled = false
-    },
-    Discord = {
-        Enabled = false
-    },
+    ConfigurationSaving = { Enabled = false },
+    Discord = { Enabled = false },
     KeySystem = false
 })
 
--- Tabs
 local CombatTab = Window:CreateTab("Combat", 4483362458)
 local VisualTab = Window:CreateTab("Visuals", 4483362458)
-local ExploitTab = Window:CreateTab("Exploits", 4483362458)
 local MiscTab = Window:CreateTab("Misc", 4483362458)
 
--- Services
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local Camera = workspace.CurrentCamera
 local UIS = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 
--- Vars
 local AimbotEnabled, BoxESPEnabled, FOVRadius, Smoothness = true, true, 150, 0.3
 local AimPart, Holding = "Head", false
 
@@ -39,7 +31,6 @@ FOVCircle.Filled = false
 FOVCircle.Radius = FOVRadius
 FOVCircle.Visible = true
 
--- Find closest target
 local function GetClosestTarget()
     local closest, shortest = nil, math.huge
     local mousePos = UIS:GetMouseLocation()
@@ -59,15 +50,11 @@ local function GetClosestTarget()
 end
 
 UIS.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton2 then
-        Holding = true
-    end
+    if input.UserInputType == Enum.UserInputType.MouseButton2 then Holding = true end
 end)
 
 UIS.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton2 then
-        Holding = false
-    end
+    if input.UserInputType == Enum.UserInputType.MouseButton2 then Holding = false end
 end)
 
 RunService.RenderStepped:Connect(function()
@@ -77,75 +64,54 @@ RunService.RenderStepped:Connect(function()
             Camera.CFrame = Camera.CFrame:Lerp(CFrame.new(Camera.CFrame.Position, target.Character[AimPart].Position), Smoothness)
         end
     end
-end)
-
-RunService.RenderStepped:Connect(function()
     local mouse = UIS:GetMouseLocation()
     FOVCircle.Position = Vector2.new(mouse.X, mouse.Y)
 end)
 
--- ESP
-local function CreateESP(player)
-    if player.Character and not player.Character:FindFirstChild("SkywareESP") then
-        local box = Instance.new("BoxHandleAdornment")
-        box.Name = "SkywareESP"
-        box.Adornee = player.Character
-        box.AlwaysOnTop = true
-        box.ZIndex = 5
-        box.Size = Vector3.new(4, 7, 4)
-        box.Color3 = Color3.fromRGB(255, 0, 0)
-        box.Transparency = 0.5
-        box.Parent = player.Character
+-- ESP (2D Box)
+local ESPBoxes = {}
+
+local function ClearESP()
+    for _, box in pairs(ESPBoxes) do
+        if box and box.Remove then box:Remove() end
+    end
+    ESPBoxes = {}
+end
+
+local function UpdateESP()
+    if not BoxESPEnabled then ClearESP() return end
+
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer and player.Team ~= LocalPlayer.Team and player.Character and player.Character:FindFirstChild("HumanoidRootPart") and player.Character:FindFirstChild("Head") then
+            if not ESPBoxes[player] then
+                local box = Drawing.new("Square")
+                box.Color = Color3.fromRGB(255, 0, 0)
+                box.Thickness = 2
+                box.Filled = false
+                ESPBoxes[player] = box
+            end
+
+            local headPos = Camera:WorldToViewportPoint(player.Character.Head.Position)
+            local rootPos = Camera:WorldToViewportPoint(player.Character.HumanoidRootPart.Position)
+
+            if headPos.Z > 0 and rootPos.Z > 0 then
+                local height = math.abs(rootPos.Y - headPos.Y)
+                local width = height / 2
+
+                local box = ESPBoxes[player]
+                box.Size = Vector2.new(width, height)
+                box.Position = Vector2.new(headPos.X - width / 2, headPos.Y)
+                box.Visible = true
+            else
+                ESPBoxes[player].Visible = false
+            end
+        elseif ESPBoxes[player] then
+            ESPBoxes[player].Visible = false
+        end
     end
 end
 
-RunService.RenderStepped:Connect(function()
-    if BoxESPEnabled then
-        for _, player in ipairs(Players:GetPlayers()) do
-            if player ~= LocalPlayer and player.Team ~= LocalPlayer.Team then
-                CreateESP(player)
-            end
-        end
-    else
-        for _, player in ipairs(Players:GetPlayers()) do
-            if player.Character and player.Character:FindFirstChild("SkywareESP") then
-                player.Character:FindFirstChild("SkywareESP"):Destroy()
-            end
-        end
-    end
-end)
-
--- Exploits
-ExploitTab:CreateButton({
-    Name = "God Mode",
-    Callback = function()
-        local hum = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
-        if hum then
-            hum.Health = hum.MaxHealth
-            hum:GetPropertyChangedSignal("Health"):Connect(function()
-                if hum.Health < hum.MaxHealth then
-                    hum.Health = hum.MaxHealth
-                end
-            end)
-        end
-    end,
-})
-
-ExploitTab:CreateButton({
-    Name = "Fly Mode",
-    Callback = function()
-        loadstring(game:HttpGet("https://pastebin.com/raw/Q2sZb2Vx"))()
-    end,
-})
-
-ExploitTab:CreateButton({
-    Name = "Infinite Jump",
-    Callback = function()
-        game:GetService("UserInputService").JumpRequest:Connect(function()
-            LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):ChangeState("Jumping")
-        end)
-    end,
-})
+RunService.RenderStepped:Connect(UpdateESP)
 
 -- UI Controls
 CombatTab:CreateToggle({
@@ -194,7 +160,7 @@ MiscTab:CreateKeybind({
 
 MiscTab:CreateParagraph({
     Title = "SkyWare V2 💜",
-    Content = "Aimbot, ESP, God, Fly, IJ\nStable & Clean Build 💜"
+    Content = "Aimbot & Clean 2D ESP Only\nStable & Optimized 💜"
 })
 
-print("✅ SkyWare V2 (Stable) loaded!") 
+print("✅ SkyWare V2 (Full reworked with 2D ESP) loaded!")
