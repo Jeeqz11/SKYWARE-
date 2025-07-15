@@ -1,4 +1,4 @@
--- SkyWare V2 - Arsenal (Final Ultimate Build)
+-- SkyWare V2 - Arsenal (Material UI Shlexware Style)
 -- Educational purposes only!
 
 -- // Services
@@ -24,16 +24,24 @@ local AimbotKey = Enum.UserInputType.MouseButton2
 local Holding = false
 local Drawings = {}
 
--- // UI
-local Venyx = loadstring(game:HttpGet("https://raw.githubusercontent.com/DenizenScript/Venyx-UI-Library/main/main.lua"))()
-local venyx = Venyx.new("SkyWare V2 - Arsenal", 5013109572)
+-- // UI Library
+local Material = loadstring(game:HttpGet("https://raw.githubusercontent.com/Kinlei/MaterialLua/main/Module.lua"))()
 
-local visuals = venyx:addPage("Visuals", 5012544693)
-local aimbot = venyx:addPage("Aimbot", 5012544693)
-local exploits = venyx:addPage("Exploits", 5012544693)
-local misc = venyx:addPage("Misc", 5012544693)
+local UI = Material.Load({
+    Title = "SkyWare V2 - Arsenal",
+    Style = 1,
+    SizeX = 500,
+    SizeY = 450,
+    Theme = "Dark"
+})
 
--- // ESP Drawing
+-- // Tabs
+local VisualsTab = UI.New({Title = "Visuals"})
+local AimbotTab = UI.New({Title = "Aimbot"})
+local ExploitsTab = UI.New({Title = "Exploits"})
+local MiscTab = UI.New({Title = "Misc"})
+
+-- // ESP
 local function ClearESP()
     for _, v in pairs(Drawings) do
         if v.Remove then v:Remove() end
@@ -43,7 +51,6 @@ end
 
 local function AddESP(player)
     ClearESP()
-
     if not player.Character then return end
     local highlight = Instance.new("Highlight")
     highlight.FillColor = ESPColor
@@ -109,7 +116,6 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
--- Silent Aim hook
 local __namecall
 __namecall = hookmetamethod(game, "__namecall", function(self, ...)
     local args = {...}
@@ -149,66 +155,102 @@ RunService.RenderStepped:Connect(function()
 end)
 
 -- // Visuals tab
-visuals:addToggle("Enable ESP", true, function(v)
-    ESPEnabled = v
-end)
-visuals:addToggle("Team Check", true, function(v)
-    TeamCheckESP = v
-end)
-visuals:addColorPicker("ESP Color", Color3.fromRGB(0, 255, 0), function(v)
-    ESPColor = v
-end)
+VisualsTab.Toggle({
+    Text = "Enable ESP",
+    Callback = function(Value) ESPEnabled = Value end,
+    Enabled = true
+})
+VisualsTab.Toggle({
+    Text = "Team Check",
+    Callback = function(Value) TeamCheckESP = Value end,
+    Enabled = true
+})
+VisualsTab.ColorPicker({
+    Text = "ESP Color",
+    Default = ESPColor,
+    Callback = function(Value) ESPColor = Value end
+})
 
 -- // Aimbot tab
-aimbot:addToggle("Enable Aimbot", false, function(v)
-    AimbotEnabled = v
-end)
-aimbot:addToggle("Team Check", true, function(v)
-    TeamCheckAimbot = v
-end)
-aimbot:addSlider("Smoothness", 0, 1, 0.15, function(v)
-    Smoothness = v
-end)
-aimbot:addSlider("FOV Radius", 50, 300, 120, function(v)
-    FOVRadius = v
-end)
-aimbot:addToggle("Silent Aim", false, function(v)
-    SilentAimEnabled = v
-end)
-aimbot:addTextbox("Aim Part", "Head", function(v)
-    AimPart = v
-end)
+AimbotTab.Toggle({
+    Text = "Enable Aimbot",
+    Callback = function(Value) AimbotEnabled = Value end,
+    Enabled = false
+})
+AimbotTab.Toggle({
+    Text = "Team Check",
+    Callback = function(Value) TeamCheckAimbot = Value end,
+    Enabled = true
+})
+AimbotTab.Toggle({
+    Text = "Silent Aim",
+    Callback = function(Value) SilentAimEnabled = Value end,
+    Enabled = false
+})
+AimbotTab.Slider({
+    Text = "Smoothness",
+    Min = 0,
+    Max = 1,
+    Def = 0.15,
+    Callback = function(Value) Smoothness = Value end
+})
+AimbotTab.Slider({
+    Text = "FOV Radius",
+    Min = 50,
+    Max = 300,
+    Def = 120,
+    Callback = function(Value) FOVRadius = Value end
+})
+AimbotTab.TextField({
+    Text = "Aim Part",
+    Placeholder = "Head",
+    Callback = function(Value) AimPart = Value end
+})
 
 -- // Exploits tab
-exploits:addToggle("Godmode", false, function(v)
-    GodmodeEnabled = v
-end)
-exploits:addToggle("WalkSpeed", false, function(v)
-    WalkSpeedEnabled = v
-end)
-exploits:addToggle("Infinite Jump", false, function(v)
-    InfiniteJumpEnabled = v
-end)
+ExploitsTab.Toggle({
+    Text = "Godmode",
+    Callback = function(Value) GodmodeEnabled = Value end,
+    Enabled = false
+})
+ExploitsTab.Toggle({
+    Text = "WalkSpeed",
+    Callback = function(Value) WalkSpeedEnabled = Value end,
+    Enabled = false
+})
+ExploitsTab.Toggle({
+    Text = "Infinite Jump",
+    Callback = function(Value) InfiniteJumpEnabled = Value end,
+    Enabled = false
+})
 
 -- // Misc tab
-misc:addButton("Rejoin", function()
-    TeleportService:Teleport(game.PlaceId, LocalPlayer)
-end)
-misc:addKeybind("Toggle UI", Enum.KeyCode.RightControl, function()
-    venyx:toggle()
-end)
-misc:addButton("Unload UI", function()
-    venyx:Exit()
-end)
+MiscTab.Button({
+    Text = "Rejoin",
+    Callback = function()
+        TeleportService:Teleport(game.PlaceId, LocalPlayer)
+    end
+})
+MiscTab.Keybind({
+    Text = "Toggle UI",
+    Key = Enum.KeyCode.RightControl,
+    Callback = function()
+        UI.Toggle()
+    end
+})
+MiscTab.Button({
+    Text = "Unload UI",
+    Callback = function()
+        UI.Break()
+    end
+})
 
--- // FPS Counter & Title
+-- // FPS & watermark
 local fps = 0
 local lastTick = tick()
 
 RunService.RenderStepped:Connect(function()
     fps = math.floor(1 / (tick() - lastTick))
     lastTick = tick()
-    venyx:setTitle("SkyWare V2 - Arsenal | FPS: " .. fps)
+    UI:SetTitle("SkyWare V2 - Arsenal | FPS: " .. fps)
 end)
-
-venyx:SelectPage(venyx.pages[1], true)
