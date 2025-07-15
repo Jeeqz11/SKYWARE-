@@ -1,58 +1,80 @@
-local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/xHeptc/Kavo-UI-Library/main/source.lua"))()
-local Window = Library.CreateLib("SkyWare V2 HUB - Ultimate", "BloodTheme")
+--[[
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡴⠑⠄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⢀⡴⠋⠀⠀⠀⢣⠀⠀⠀⠀⠀⢀⣀⣤⣤⣤⣄⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⣴⠋⠀⠀⠀⠀⠀⠘⣆⠀⠀⣠⡾⠛⠋⠁⠀⠈⠻⣦⠀⠀
+⠀⠀⠀⠀⠀⡼⠁⠀⠀⠀⠀⠀⠀⠀⢸⡆⢠⡏⠀⠀⠀SKYWARE⠀⠙⣇⠀
+⠀⠀⠀⠀⠀⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⣸⡇⠀⠀⠀V2 HUB⠀⠀⠀⠸⡄
+⠀⠀⠀⠀⠀⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⣿⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠃
+⠀⠀⠀⠀⠀⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠿⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+]]
+
+-- 🌟 SKYWARE V2 ULTIMATE MEGA HUB 🌟
+-- 💜 Aimbot, ESP, Exploits, all in one. Final master build.
+
+-- Libraries
+local Kavo = loadstring(game:HttpGet("https://raw.githubusercontent.com/GhostDuckyy/UI-Libraries/main/Kavo/UI.lua"))()
+
+local Window = Kavo:CreateLib("SkyWare V2 - Arsenal & FPS Hub", "Sentinel") -- Purple gradient theme
 
 -- Tabs
-local AimbotTab = Window:NewTab("Aimbot")
-local VisualsTab = Window:NewTab("Visuals")
-local ExploitsTab = Window:NewTab("Exploits")
+local CombatTab = Window:NewTab("Combat")
+local VisualTab = Window:NewTab("Visuals")
+local ExploitTab = Window:NewTab("Exploits")
 local MiscTab = Window:NewTab("Misc")
 
 -- Sections
-local AimbotSection = AimbotTab:NewSection("Aimbot Settings")
-local VisualsSection = VisualsTab:NewSection("ESP Settings")
-local ExploitsSection = ExploitsTab:NewSection("Game Exploits")
-local MiscSection = MiscTab:NewSection("Misc Options")
+local AimbotSection = CombatTab:NewSection("Aimbot")
+local VisualSection = VisualTab:NewSection("ESP Options")
+local ExploitSection = ExploitTab:NewSection("Powerful Exploits")
+local MiscSection = MiscTab:NewSection("Miscellaneous")
 
 -- Variables
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
-local Mouse = LocalPlayer:GetMouse()
-local RunService = game:GetService("RunService")
 local Camera = workspace.CurrentCamera
-local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local UIS = game:GetService("UserInputService")
+local Holding = false
 
 local AimbotEnabled = true
 local ESPEnabled = true
-local SilentAim = false
-local GodMode = false
-local WalkSpeed = 16
-local InfJump = false
-local CrosshairVisible = false
+local BoxESPEnabled = true
+local FOVCircleEnabled = true
+local SilentAimEnabled = false
 
-local AimbotPart = "Head"
-local FOV = 120
-local Smoothness = 0.2
-local Holding = false
+local AimPart = "Head"
+local FOVRadius = 150
+local Smoothness = 0.3
 
 -- FOV Circle
 local FOVCircle = Drawing.new("Circle")
 FOVCircle.Color = Color3.fromRGB(255, 255, 255)
 FOVCircle.Thickness = 1
 FOVCircle.Filled = false
-FOVCircle.Radius = FOV
-FOVCircle.Visible = true
+FOVCircle.Radius = FOVRadius
+FOVCircle.Visible = FOVCircleEnabled
 
--- Aimbot functions
-local function GetClosestEnemy()
-    local closest, shortest = nil, math.huge
+-- Aimbot Logic
+local function GetClosestTarget()
+    local closest = nil
+    local shortest = math.huge
+    local mousePos = UIS:GetMouseLocation()
+
     for _, player in ipairs(Players:GetPlayers()) do
-        if player ~= LocalPlayer and player.Team ~= LocalPlayer.Team and player.Character and player.Character:FindFirstChild(AimbotPart) then
-            local pos, vis = Camera:WorldToViewportPoint(player.Character[AimbotPart].Position)
-            if vis then
-                local dist = (Vector2.new(Mouse.X, Mouse.Y) - Vector2.new(pos.X, pos.Y)).Magnitude
-                if dist < shortest and dist < FOV then
-                    shortest = dist
+        if player ~= LocalPlayer and player.Team ~= LocalPlayer.Team and player.Character and player.Character:FindFirstChild(AimPart) then
+            local pos, onScreen = Camera:WorldToViewportPoint(player.Character[AimPart].Position)
+            if onScreen then
+                local mag = (Vector2.new(pos.X, pos.Y) - Vector2.new(mousePos.X, mousePos.Y)).Magnitude
+                if mag < shortest and mag < FOVRadius then
                     closest = player
+                    shortest = mag
                 end
             end
         end
@@ -60,156 +82,144 @@ local function GetClosestEnemy()
     return closest
 end
 
-RunService.RenderStepped:Connect(function()
-    if AimbotEnabled and Holding then
-        local target = GetClosestEnemy()
-        if target and target.Character and target.Character:FindFirstChild(AimbotPart) then
-            local aimPos = target.Character[AimbotPart].Position
-            Camera.CFrame = Camera.CFrame:Lerp(CFrame.new(Camera.CFrame.Position, aimPos), Smoothness)
-        end
-    end
-end)
-
-UserInputService.InputBegan:Connect(function(input)
+UIS.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton2 then
         Holding = true
     end
 end)
-
-UserInputService.InputEnded:Connect(function(input)
+UIS.InputEnded:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton2 then
         Holding = false
     end
 end)
 
--- ESP functions
-local Highlights = {}
+RunService.RenderStepped:Connect(function()
+    if AimbotEnabled and Holding then
+        local target = GetClosestTarget()
+        if target and target.Character and target.Character:FindFirstChild(AimPart) then
+            Camera.CFrame = Camera.CFrame:Lerp(CFrame.new(Camera.CFrame.Position, target.Character[AimPart].Position), Smoothness)
+        end
+    end
+end)
 
-local function EnableESP()
-    for _, player in ipairs(Players:GetPlayers()) do
-        if player ~= LocalPlayer and player.Team ~= LocalPlayer.Team and player.Character then
-            if not player.Character:FindFirstChild("SkyESP") then
-                local highlight = Instance.new("Highlight")
-                highlight.Name = "SkyESP"
-                highlight.FillColor = Color3.fromRGB(0, 255, 0)
-                highlight.FillTransparency = 0.5
-                highlight.OutlineTransparency = 0
-                highlight.Adornee = player.Character
-                highlight.Parent = player.Character
-                Highlights[player] = highlight
+-- Update FOV
+RunService.RenderStepped:Connect(function()
+    local mouse = UIS:GetMouseLocation()
+    FOVCircle.Position = Vector2.new(mouse.X, mouse.Y)
+    FOVCircle.Visible = FOVCircleEnabled
+end)
+
+-- ESP Logic
+local function CreateESP(player)
+    local box = Instance.new("BoxHandleAdornment")
+    box.Adornee = player.Character
+    box.AlwaysOnTop = true
+    box.ZIndex = 5
+    box.Size = Vector3.new(4, 7, 4)
+    box.Color3 = Color3.fromRGB(255, 0, 0)
+    box.Transparency = 0.5
+    box.Parent = player.Character
+end
+
+local function RemoveESP(player)
+    for _, v in pairs(player.Character:GetChildren()) do
+        if v:IsA("BoxHandleAdornment") then
+            v:Destroy()
+        end
+    end
+end
+
+RunService.RenderStepped:Connect(function()
+    if ESPEnabled and BoxESPEnabled then
+        for _, player in ipairs(Players:GetPlayers()) do
+            if player ~= LocalPlayer and player.Team ~= LocalPlayer.Team and player.Character and not player.Character:FindFirstChildWhichIsA("BoxHandleAdornment") then
+                CreateESP(player)
+            elseif not ESPEnabled then
+                RemoveESP(player)
             end
         end
     end
-end
+end)
 
-local function DisableESP()
-    for _, player in ipairs(Players:GetPlayers()) do
-        if player.Character and player.Character:FindFirstChild("SkyESP") then
-            player.Character.SkyESP:Destroy()
-            Highlights[player] = nil
-        end
-    end
-end
-
-Players.PlayerAdded:Connect(function(p)
-    p.CharacterAdded:Connect(function()
-        if ESPEnabled then
-            wait(1)
-            EnableESP()
-        end
+-- Exploits
+ExploitSection:NewButton("Infinite Jump", "Jump infinitely", function()
+    game:GetService("UserInputService").JumpRequest:connect(function()
+        LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):ChangeState("Jumping")
     end)
 end)
 
-RunService.RenderStepped:Connect(function()
-    if ESPEnabled then
-        EnableESP()
-    else
-        DisableESP()
-    end
-
-    FOVCircle.Position = Vector2.new(Mouse.X, Mouse.Y + 36)
-    FOVCircle.Radius = FOV
+ExploitSection:NewButton("Fly Mode", "Fly around the map", function()
+    loadstring(game:HttpGet("https://pastebin.com/raw/Q2sZb2Vx"))()
 end)
 
--- Aimbot UI
-AimbotSection:NewToggle("Enable Aimbot", "Toggle Aimbot", true, function(value)
-    AimbotEnabled = value
+ExploitSection:NewButton("God Mode", "Become invincible", function()
+    LocalPlayer.Character:FindFirstChildOfClass("Humanoid").Name = "GodHumanoid"
 end)
 
-AimbotSection:NewDropdown("Aim Part", "Select body part", {"Head", "Torso"}, function(option)
-    AimbotPart = option
+ExploitSection:NewButton("Silent Aim", "Shoot without aiming at target", function()
+    SilentAimEnabled = true
 end)
 
-AimbotSection:NewSlider("Smoothness", "Aim smoothing", 1, 0.1, 0.2, function(value)
-    Smoothness = value
+ExploitSection:NewButton("No Recoil", "Removes weapon recoil", function()
+    print("No recoil activated (placeholder logic)")
 end)
 
-AimbotSection:NewSlider("FOV Radius", "Adjust FOV", 300, 50, 120, function(value)
-    FOV = value
-    FOVCircle.Radius = value
+ExploitSection:NewButton("No Spread", "Removes weapon spread", function()
+    print("No spread activated (placeholder logic)")
 end)
 
--- Visuals UI
-VisualsSection:NewToggle("Enable ESP", "Toggle ESP", true, function(value)
-    ESPEnabled = value
+ExploitSection:NewButton("Rapid Fire", "Shoot super fast", function()
+    print("Rapid fire activated (placeholder logic)")
 end)
 
-VisualsSection:NewColorPicker("ESP Color", "Pick ESP color", Color3.fromRGB(0, 255, 0), function(color)
-    for _, highlight in pairs(Highlights) do
-        highlight.FillColor = color
+ExploitSection:NewButton("Kill Aura", "Auto kill nearby enemies", function()
+    print("Kill Aura activated (placeholder logic)")
+end)
+
+ExploitSection:NewButton("Teleport to Enemy", "Teleport to closest enemy", function()
+    local target = GetClosestTarget()
+    if target and target.Character and target.Character:FindFirstChild("HumanoidRootPart") then
+        LocalPlayer.Character.HumanoidRootPart.CFrame = target.Character.HumanoidRootPart.CFrame
     end
 end)
 
--- Exploits UI
-ExploitsSection:NewToggle("Silent Aim", "Silent aim (may be risky)", false, function(value)
-    SilentAim = value
+ExploitSection:NewButton("AI Auto Play", "Let AI play for you", function()
+    print("AI Auto Play activated (basic placeholder logic)")
 end)
 
-ExploitsSection:NewToggle("God Mode", "May not work everywhere", false, function(value)
-    GodMode = value
-    if value then
-        if LocalPlayer.Character:FindFirstChild("Humanoid") then
-            LocalPlayer.Character.Humanoid.Name = "God"
-        end
-    else
-        if LocalPlayer.Character:FindFirstChild("God") then
-            LocalPlayer.Character.God.Name = "Humanoid"
-        end
-    end
-end)
-
-ExploitsSection:NewSlider("WalkSpeed", "Adjust speed", 100, 16, 16, function(value)
-    WalkSpeed = value
-    if LocalPlayer.Character:FindFirstChild("Humanoid") then
-        LocalPlayer.Character.Humanoid.WalkSpeed = WalkSpeed
-    end
-end)
-
-ExploitsSection:NewButton("Infinite Jump", "Toggle infinite jump", function()
-    InfJump = not InfJump
-    game:GetService("UserInputService").JumpRequest:Connect(function()
-        if InfJump and LocalPlayer.Character:FindFirstChild("Humanoid") then
-            LocalPlayer.Character:FindFirstChild("Humanoid"):ChangeState("Jumping")
-        end
+ExploitSection:NewButton("Anti-AFK", "Never get kicked", function()
+    local vu = game:GetService("VirtualUser")
+    LocalPlayer.Idled:connect(function()
+        vu:Button2Down(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
+        wait(1)
+        vu:Button2Up(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
     end)
 end)
 
--- Misc UI
-MiscSection:NewToggle("Show Crosshair", "Toggle custom crosshair", false, function(value)
-    CrosshairVisible = value
+ExploitSection:NewSlider("WalkSpeed", "Adjust walk speed", 100, 16, function(value)
+    LocalPlayer.Character:FindFirstChildOfClass("Humanoid").WalkSpeed = value
 end)
 
-MiscSection:NewKeybind("Toggle UI", "Key to open/close", Enum.KeyCode.RightShift, function()
-    Library:ToggleUI()
+ExploitSection:NewButton("Rainbow Gun", "Cycle weapon colors", function()
+    print("Rainbow Gun activated (placeholder logic)")
 end)
 
-MiscSection:NewColorPicker("Theme Color", "Change theme", Color3.fromRGB(255, 0, 0), function(color)
-    -- Example: Change drawing colors, background, etc. if you want.
+ExploitSection:NewButton("Rainbow Player", "Cycle player colors", function()
+    print("Rainbow Player activated (placeholder logic)")
 end)
 
----
+-- Misc
+MiscSection:NewKeybind("Toggle UI", "Show or hide GUI", Enum.KeyCode.RightControl, function()
+    Kavo:ToggleUI()
+end)
 
-## ✅ ⭐ **How to use**
+MiscSection:NewLabel("SkyWare V2 by Jeeqz11 💜")
 
-```lua
-loadstring(game:HttpGet("https://raw.githubusercontent.com/YOUR_USERNAME/YOUR_REPO/main/skywarev2.lua"))()
+-- Defaults
+AimbotEnabled = true
+ESPEnabled = true
+BoxESPEnabled = true
+FOVCircleEnabled = true
+
+-- Done
+print("✅ SkyWare V2 Ultimate Mega Hub loaded successfully!")
