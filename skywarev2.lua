@@ -1,4 +1,4 @@
--- SkyWare V2 💜 Arsenal (Full script with reworked 2D ESP)
+-- SkyWare V2 💜 Arsenal (Full script with full-body ESP and extra ESP features)
 
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 local Window = Rayfield:CreateWindow({
@@ -20,7 +20,7 @@ local Camera = workspace.CurrentCamera
 local UIS = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 
-local AimbotEnabled, BoxESPEnabled, FOVRadius, Smoothness = true, true, 150, 0.3
+local AimbotEnabled, BoxESPEnabled, FOVRadius, Smoothness, NameESPEnabled, TracerESPEnabled = true, true, 150, 0.3, true, true
 local AimPart, Holding = "Head", false
 
 -- FOV Circle
@@ -68,14 +68,14 @@ RunService.RenderStepped:Connect(function()
     FOVCircle.Position = Vector2.new(mouse.X, mouse.Y)
 end)
 
--- ESP (2D Box)
-local ESPBoxes = {}
+-- ESP
+local ESPObjects = {}
 
 local function ClearESP()
-    for _, box in pairs(ESPBoxes) do
-        if box and box.Remove then box:Remove() end
+    for _, obj in pairs(ESPObjects) do
+        if obj and obj.Remove then obj:Remove() end
     end
-    ESPBoxes = {}
+    ESPObjects = {}
 end
 
 local function UpdateESP()
@@ -83,30 +83,57 @@ local function UpdateESP()
 
     for _, player in ipairs(Players:GetPlayers()) do
         if player ~= LocalPlayer and player.Team ~= LocalPlayer.Team and player.Character and player.Character:FindFirstChild("HumanoidRootPart") and player.Character:FindFirstChild("Head") then
-            if not ESPBoxes[player] then
-                local box = Drawing.new("Square")
-                box.Color = Color3.fromRGB(255, 0, 0)
-                box.Thickness = 2
-                box.Filled = false
-                ESPBoxes[player] = box
+
+            if not ESPObjects[player] then
+                ESPObjects[player] = {
+                    Box = Drawing.new("Square"),
+                    Name = Drawing.new("Text"),
+                    Tracer = Drawing.new("Line")
+                }
+
+                ESPObjects[player].Box.Color = Color3.fromRGB(255, 0, 0)
+                ESPObjects[player].Box.Thickness = 2
+                ESPObjects[player].Box.Filled = false
+
+                ESPObjects[player].Name.Color = Color3.fromRGB(255, 255, 255)
+                ESPObjects[player].Name.Size = 16
+                ESPObjects[player].Name.Center = true
+                ESPObjects[player].Name.Outline = true
+
+                ESPObjects[player].Tracer.Color = Color3.fromRGB(255, 0, 0)
+                ESPObjects[player].Tracer.Thickness = 1
             end
 
             local headPos = Camera:WorldToViewportPoint(player.Character.Head.Position)
-            local rootPos = Camera:WorldToViewportPoint(player.Character.HumanoidRootPart.Position)
+            local footPos = Camera:WorldToViewportPoint(player.Character.HumanoidRootPart.Position - Vector3.new(0, 3, 0))
 
-            if headPos.Z > 0 and rootPos.Z > 0 then
-                local height = math.abs(rootPos.Y - headPos.Y)
+            if headPos.Z > 0 and footPos.Z > 0 then
+                local height = math.abs(footPos.Y - headPos.Y)
                 local width = height / 2
 
-                local box = ESPBoxes[player]
+                local box = ESPObjects[player].Box
                 box.Size = Vector2.new(width, height)
                 box.Position = Vector2.new(headPos.X - width / 2, headPos.Y)
                 box.Visible = true
+
+                local name = ESPObjects[player].Name
+                name.Position = Vector2.new(headPos.X, headPos.Y - 16)
+                name.Text = player.Name
+                name.Visible = NameESPEnabled
+
+                local tracer = ESPObjects[player].Tracer
+                tracer.From = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y)
+                tracer.To = Vector2.new(footPos.X, footPos.Y)
+                tracer.Visible = TracerESPEnabled
             else
-                ESPBoxes[player].Visible = false
+                ESPObjects[player].Box.Visible = false
+                ESPObjects[player].Name.Visible = false
+                ESPObjects[player].Tracer.Visible = false
             end
-        elseif ESPBoxes[player] then
-            ESPBoxes[player].Visible = false
+        elseif ESPObjects[player] then
+            ESPObjects[player].Box.Visible = false
+            ESPObjects[player].Name.Visible = false
+            ESPObjects[player].Tracer.Visible = false
         end
     end
 end
@@ -146,6 +173,18 @@ VisualTab:CreateToggle({
 })
 
 VisualTab:CreateToggle({
+    Name = "ESP Names",
+    CurrentValue = NameESPEnabled,
+    Callback = function(Value) NameESPEnabled = Value end,
+})
+
+VisualTab:CreateToggle({
+    Name = "ESP Tracers",
+    CurrentValue = TracerESPEnabled,
+    Callback = function(Value) TracerESPEnabled = Value end,
+})
+
+VisualTab:CreateToggle({
     Name = "FOV Circle",
     CurrentValue = true,
     Callback = function(Value) FOVCircle.Visible = Value end,
@@ -160,7 +199,7 @@ MiscTab:CreateKeybind({
 
 MiscTab:CreateParagraph({
     Title = "SkyWare V2 💜",
-    Content = "Aimbot & Clean 2D ESP Only\nStable & Optimized 💜"
+    Content = "Aimbot & Full-Body ESP with Names & Tracers\nStable & Optimized 💜"
 })
 
-print("✅ SkyWare V2 (Full reworked with 2D ESP) loaded!")
+print("✅ SkyWare V2 (Full reworked with full-body ESP) loaded!")
