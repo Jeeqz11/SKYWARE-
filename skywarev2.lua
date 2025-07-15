@@ -1,163 +1,172 @@
--- SkyWare V2 - Final Kavo UI Build 💜
+-- ⚠️ This script is for educational purposes only. Do not use in live games.
+-- Arsenal Kavo UI script with advanced features: aimbot, ESP, chams, exploits, misc, and cosmetic spoofer.
 
-local Kavo = loadstring(game:HttpGet("https://raw.githubusercontent.com/o5u3/Ui-Libraries/main/Kavo/Kavo%20Library.lua"))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/xHeptc/Kavo-UI-Library/main/source.lua"))()
 
-local Window = Kavo:CreateLib("SkyWare V2 - Arsenal", "Sentinel")
+local Window = Library.CreateLib("Arsenal Hub", "Midnight")
 
--- Variables
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-local Camera = workspace.CurrentCamera
-local RunService = game:GetService("RunService")
-local UIS = game:GetService("UserInputService")
+-- Aimbot Tab
+local AimbotTab = Window:NewTab("Aimbot")
+local AimbotSection = AimbotTab:NewSection("Aimbot")
 
-local AimbotEnabled = true
-local ESPEnabled = true
-local BoxESPEnabled = true
-local FOVEnabled = true
-local Smoothness = 0.3
-local FOVRadius = 150
-local AimPart = "Head"
-local Holding = false
+local aimbotEnabled = false
+AimbotSection:NewToggle("Enable Aimbot", "Toggle aimbot on/off", function(state)
+    aimbotEnabled = state
+end)
 
--- FOV Circle
-local FOVCircle = Drawing.new("Circle")
-FOVCircle.Color = Color3.fromRGB(255, 255, 255)
-FOVCircle.Thickness = 1
-FOVCircle.Filled = false
-FOVCircle.Radius = FOVRadius
-FOVCircle.Visible = FOVEnabled
+local silentAim = false
+AimbotSection:NewToggle("Silent Aim", "Shoot enemies without aiming directly", function(state)
+    silentAim = state
+end)
 
--- Aimbot
-local function GetClosest()
-    local closest, shortest = nil, math.huge
-    local mouse = UIS:GetMouseLocation()
+local aimFOV = 100
+AimbotSection:NewSlider("Aimbot FOV", "Field of view for aimbot", 360, 10, function(value)
+    aimFOV = value
+end)
 
-    for _, player in ipairs(Players:GetPlayers()) do
-        if player ~= LocalPlayer and player.Team ~= LocalPlayer.Team and player.Character and player.Character:FindFirstChild(AimPart) then
-            local pos, onScreen = Camera:WorldToViewportPoint(player.Character[AimPart].Position)
-            if onScreen then
-                local mag = (Vector2.new(pos.X, pos.Y) - Vector2.new(mouse.X, mouse.Y)).Magnitude
-                if mag < shortest and mag < FOVRadius then
-                    closest = player
-                    shortest = mag
+-- Visuals Tab
+local VisualTab = Window:NewTab("Visuals")
+local VisualSection = VisualTab:NewSection("ESP & Chams")
+
+local espEnabled = false
+VisualSection:NewToggle("Enable ESP", "Show enemies through walls", function(state)
+    espEnabled = state
+end)
+
+local chamsEnabled = false
+VisualSection:NewToggle("Enable Chams", "Color enemy models", function(state)
+    chamsEnabled = state
+end)
+
+-- Exploits Tab
+local ExploitTab = Window:NewTab("Exploits")
+local ExploitSection = ExploitTab:NewSection("Exploits")
+
+ExploitSection:NewButton("Fly (F Key)", "Toggle fly mode", function()
+    local fly = false
+    local uis = game:GetService("UserInputService")
+    local plr = game.Players.LocalPlayer
+    local char = plr.Character or plr.CharacterAdded:Wait()
+    local hrp = char:WaitForChild("HumanoidRootPart")
+
+    local bv = Instance.new("BodyVelocity")
+    bv.MaxForce = Vector3.new(0,0,0)
+    bv.Velocity = Vector3.new(0,0,0)
+    bv.Parent = hrp
+
+    local function toggleFly()
+        fly = not fly
+        bv.MaxForce = fly and Vector3.new(9e9, 9e9, 9e9) or Vector3.new(0, 0, 0)
+    end
+
+    uis.InputBegan:Connect(function(input)
+        if input.KeyCode == Enum.KeyCode.F then
+            toggleFly()
+        end
+    end)
+
+    game:GetService("RunService").Heartbeat:Connect(function()
+        if fly then
+            bv.Velocity = plr:GetMouse().Hit.LookVector * 100
+        end
+    end)
+end)
+
+ExploitSection:NewButton("No Fall Damage", "Remove fall damage", function()
+    game.Players.LocalPlayer.Character.FallDamageScript:Destroy()
+end)
+
+ExploitSection:NewButton("Infinite Jump", "Jump infinitely", function()
+    game:GetService("UserInputService").JumpRequest:Connect(function()
+        game.Players.LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):ChangeState("Jumping")
+    end)
+end)
+
+-- Misc Tab
+local MiscTab = Window:NewTab("Misc")
+local MiscSection = MiscTab:NewSection("Misc Features")
+
+MiscSection:NewButton("Cosmetic Spoofer", "Spoof skins and cosmetics", function()
+    local player = game.Players.LocalPlayer
+    local cosmetics = player:FindFirstChild("Cosmetics")
+    if cosmetics then
+        cosmetics:Destroy()
+        local spoof = Instance.new("Folder")
+        spoof.Name = "Cosmetics"
+        spoof.Parent = player
+    end
+end)
+
+MiscSection:NewButton("Unlock All Skins", "Visually unlock all skins", function()
+    for _, v in pairs(game.ReplicatedStorage.Skins:GetChildren()) do
+        v.Value = true
+    end
+end)
+
+-- Logic for aimbot and visuals
+local function getClosestTarget()
+    local plr = game.Players.LocalPlayer
+    local mouse = plr:GetMouse()
+    local closest = nil
+    local shortest = math.huge
+
+    for _, v in pairs(game.Players:GetPlayers()) do
+        if v ~= plr and v.Character and v.Character:FindFirstChild("HumanoidRootPart") and v.Team ~= plr.Team then
+            local screenPoint = workspace.CurrentCamera:WorldToScreenPoint(v.Character.HumanoidRootPart.Position)
+            local dist = (Vector2.new(screenPoint.X, screenPoint.Y) - Vector2.new(mouse.X, mouse.Y)).magnitude
+
+            if dist < shortest and dist < aimFOV then
+                shortest = dist
+                closest = v
+            end
+        end
+    end
+    return closest
+end
+
+game:GetService("RunService").RenderStepped:Connect(function()
+    if aimbotEnabled then
+        local target = getClosestTarget()
+        if target and target.Character and target.Character:FindFirstChild("HumanoidRootPart") then
+            workspace.CurrentCamera.CFrame = CFrame.new(workspace.CurrentCamera.CFrame.Position, target.Character.HumanoidRootPart.Position)
+        end
+    end
+
+    if espEnabled then
+        for _, v in pairs(game.Players:GetPlayers()) do
+            if v ~= game.Players.LocalPlayer and v.Character and v.Character:FindFirstChild("HumanoidRootPart") then
+                if not v.Character:FindFirstChild("ESPBox") then
+                    local box = Instance.new("BoxHandleAdornment")
+                    box.Name = "ESPBox"
+                    box.Adornee = v.Character.HumanoidRootPart
+                    box.Size = Vector3.new(4, 6, 4)
+                    box.Transparency = 0.5
+                    box.Color3 = Color3.new(1, 0, 0)
+                    box.AlwaysOnTop = true
+                    box.Parent = v.Character
                 end
             end
         end
     end
 
-    return closest
-end
-
-UIS.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton2 then
-        Holding = true
-    end
-end)
-UIS.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton2 then
-        Holding = false
-    end
-end)
-
-RunService.RenderStepped:Connect(function()
-    if AimbotEnabled and Holding then
-        local target = GetClosest()
-        if target and target.Character and target.Character:FindFirstChild(AimPart) then
-            Camera.CFrame = Camera.CFrame:Lerp(CFrame.new(Camera.CFrame.Position, target.Character[AimPart].Position), Smoothness)
-        end
-    end
-end)
-
-RunService.RenderStepped:Connect(function()
-    local mouse = UIS:GetMouseLocation()
-    FOVCircle.Position = Vector2.new(mouse.X, mouse.Y)
-    FOVCircle.Visible = FOVEnabled
-end)
-
--- ESP Logic
-local function CreateESP(player)
-    if player.Character and not player.Character:FindFirstChild("SkyBoxESP") then
-        local box = Instance.new("BoxHandleAdornment")
-        box.Name = "SkyBoxESP"
-        box.Adornee = player.Character
-        box.AlwaysOnTop = true
-        box.ZIndex = 5
-        box.Size = Vector3.new(4, 7, 4)
-        box.Color3 = Color3.fromRGB(255, 0, 0)
-        box.Transparency = 0.5
-        box.Parent = player.Character
-    end
-end
-
-RunService.RenderStepped:Connect(function()
-    if ESPEnabled and BoxESPEnabled then
-        for _, player in ipairs(Players:GetPlayers()) do
-            if player ~= LocalPlayer and player.Team ~= LocalPlayer.Team then
-                CreateESP(player)
-            end
-        end
-    else
-        for _, player in ipairs(Players:GetPlayers()) do
-            if player.Character and player.Character:FindFirstChild("SkyBoxESP") then
-                player.Character:FindFirstChild("SkyBoxESP"):Destroy()
+    if chamsEnabled then
+        for _, v in pairs(game.Players:GetPlayers()) do
+            if v ~= game.Players.LocalPlayer and v.Character then
+                for _, part in pairs(v.Character:GetDescendants()) do
+                    if part:IsA("BasePart") and not part:FindFirstChild("Cham") then
+                        local cham = Instance.new("BoxHandleAdornment")
+                        cham.Name = "Cham"
+                        cham.Adornee = part
+                        cham.Size = part.Size
+                        cham.Color3 = Color3.new(0, 1, 0)
+                        cham.Transparency = 0.5
+                        cham.AlwaysOnTop = true
+                        cham.Parent = part
+                    end
+                end
             end
         end
     end
 end)
 
--- Tabs & Sections
-local Combat = Window:NewTab("Combat")
-local Visuals = Window:NewTab("Visuals")
-local Exploits = Window:NewTab("Exploits")
-local Misc = Window:NewTab("Misc")
-
-local CombatSection = Combat:NewSection("Aimbot")
-CombatSection:NewButton("Aimbot (RMB)", "Enable aimbot when holding RMB", function()
-    AimbotEnabled = not AimbotEnabled
-end)
-CombatSection:NewSlider("FOV Radius", "Adjust FOV size", 300, 50, function(val)
-    FOVRadius = val
-    FOVCircle.Radius = val
-end)
-CombatSection:NewSlider("Smoothness", "Adjust aimbot smoothness", 1, 0, function(val)
-    Smoothness = val
-end)
-CombatSection:NewDropdown("Aim Part", "Choose part", {"Head", "Torso"}, function(val)
-    AimPart = val
-end)
-
-local VisualSection = Visuals:NewSection("ESP")
-VisualSection:NewButton("Toggle ESP Boxes", "Enable or disable box ESP", function()
-    BoxESPEnabled = not BoxESPEnabled
-end)
-VisualSection:NewButton("Toggle FOV Circle", "Enable or disable FOV circle", function()
-    FOVEnabled = not FOVEnabled
-    FOVCircle.Visible = FOVEnabled
-end)
-
-local ExploitSection = Exploits:NewSection("Fun Exploits")
-ExploitSection:NewButton("Infinite Jump", "Jump forever", function()
-    game:GetService("UserInputService").JumpRequest:Connect(function()
-        LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):ChangeState("Jumping")
-    end)
-end)
-ExploitSection:NewButton("God Mode", "Godmode (bypass)", function()
-    LocalPlayer.Character:FindFirstChildOfClass("Humanoid").Name = "GodHumanoid"
-end)
-ExploitSection:NewButton("Fly (FE)", "Fly script", function()
-    loadstring(game:HttpGet("https://pastebin.com/raw/Q2sZb2Vx"))()
-end)
-
-local MiscSection = Misc:NewSection("UI & Misc")
-MiscSection:NewKeybind("Toggle UI", "Show/Hide UI", Enum.KeyCode.RightControl, function()
-    Kavo:ToggleUI()
-end)
-
--- Defaults
-AimbotEnabled = true
-ESPEnabled = true
-BoxESPEnabled = true
-FOVEnabled = true
-
-print("✅ SkyWare V2 Arsenal - Final Kavo Build Loaded!")
+print("✅ Arsenal script loaded with advanced features.")
