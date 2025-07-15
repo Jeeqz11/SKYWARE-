@@ -1,4 +1,4 @@
--- SkyWare V2 - Arsenal - FULL FINAL FUNCTIONAL SCRIPT
+-- SkyWare V2 - Arsenal Mega Hub
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -6,257 +6,231 @@ local UserInputService = game:GetService("UserInputService")
 local LocalPlayer = Players.LocalPlayer
 local Camera = workspace.CurrentCamera
 
--- GUI Setup
-local SkyWareGUI = Instance.new("ScreenGui")
-SkyWareGUI.Name = "SkyWareV2"
-SkyWareGUI.ResetOnSpawn = false
-SkyWareGUI.Parent = game:GetService("CoreGui")
-
--- Sidebar
-local Sidebar = Instance.new("Frame")
-Sidebar.Size = UDim2.new(0, 160, 1, 0)
-Sidebar.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-Sidebar.BorderSizePixel = 0
-Sidebar.Parent = SkyWareGUI
-
 -- Watermark
-local Watermark = Instance.new("TextLabel")
-Watermark.Size = UDim2.new(0, 300, 0, 30)
-Watermark.Position = UDim2.new(0, 10, 0, 10)
-Watermark.BackgroundTransparency = 1
-Watermark.Text = "SkyWare V2 - Arsenal"
-Watermark.TextColor3 = Color3.fromRGB(0, 175, 255)
-Watermark.Font = Enum.Font.GothamBold
-Watermark.TextSize = 18
-Watermark.TextXAlignment = Enum.TextXAlignment.Left
-Watermark.Parent = SkyWareGUI
+local watermark = Instance.new("TextLabel")
+watermark.Text = "SkyWare V2 - Arsenal"
+watermark.Size = UDim2.new(0, 300, 0, 30)
+watermark.Position = UDim2.new(0, 10, 0, 10)
+watermark.BackgroundTransparency = 1
+watermark.TextColor3 = Color3.fromRGB(255, 255, 255)
+watermark.Font = Enum.Font.GothamBold
+watermark.TextSize = 20
+watermark.Parent = game:GetService("CoreGui")
 
--- Main Panel
-local MainPanel = Instance.new("Frame")
-MainPanel.Size = UDim2.new(1, -160, 1, 0)
-MainPanel.Position = UDim2.new(0, 160, 0, 0)
-MainPanel.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-MainPanel.BorderSizePixel = 0
-MainPanel.Parent = SkyWareGUI
+-- Main UI Container
+local ScreenGui = Instance.new("ScreenGui", game.CoreGui)
+ScreenGui.Name = "SkyWareV2"
 
--- Panel Title
-local PanelTitle = Instance.new("TextLabel")
-PanelTitle.Size = UDim2.new(1, 0, 0, 50)
-PanelTitle.BackgroundTransparency = 1
-PanelTitle.Text = "Welcome to SkyWare V2"
-PanelTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
-PanelTitle.Font = Enum.Font.GothamBold
-PanelTitle.TextSize = 22
-PanelTitle.Parent = MainPanel
+local MainFrame = Instance.new("Frame")
+MainFrame.Size = UDim2.new(0, 500, 0, 450)
+MainFrame.Position = UDim2.new(0.5, -250, 0.5, -225)
+MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+MainFrame.BorderSizePixel = 0
+MainFrame.Parent = ScreenGui
 
--- Tabs
-local tabs = {
-    "Combat",
-    "Visuals",
-    "Exploit",
-    "Miscellaneous"
-}
+local UICorner = Instance.new("UICorner", MainFrame)
+UICorner.CornerRadius = UDim.new(0, 8)
 
-local contentFrames = {}
+local TabFolder = Instance.new("Folder", MainFrame)
+TabFolder.Name = "Tabs"
 
--- Function to create content frame for each tab
-local function CreateContentFrame(tabName)
-    local frame = Instance.new("Frame")
-    frame.Size = UDim2.new(1, 0, 1, -50)
-    frame.Position = UDim2.new(0, 0, 0, 50)
-    frame.BackgroundTransparency = 1
-    frame.Visible = false
-    frame.Parent = MainPanel
+-- Tab Buttons
+local Tabs = {"Combat", "Exploit", "Skin Changer", "Misc"}
+local Frames = {}
 
-    local label = Instance.new("TextLabel")
-    label.Size = UDim2.new(1, 0, 0, 30)
-    label.Text = tabName.." Settings"
-    label.TextColor3 = Color3.fromRGB(255, 255, 255)
-    label.Font = Enum.Font.GothamBold
-    label.TextSize = 20
-    label.BackgroundTransparency = 1
-    label.Parent = frame
+for i, tabName in ipairs(Tabs) do
+    local Button = Instance.new("TextButton")
+    Button.Size = UDim2.new(0, 120, 0, 30)
+    Button.Position = UDim2.new(0, 10 + (i-1)*130, 0, 10)
+    Button.Text = tabName
+    Button.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+    Button.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Button.Font = Enum.Font.Gotham
+    Button.TextSize = 14
+    Button.Parent = MainFrame
 
-    contentFrames[tabName] = frame
-end
+    local HoverAnim = Instance.new("UICorner", Button)
+    HoverAnim.CornerRadius = UDim.new(0, 6)
 
-for _, tabName in ipairs(tabs) do
-    CreateContentFrame(tabName)
-end
+    local Frame = Instance.new("Frame")
+    Frame.Size = UDim2.new(1, -20, 1, -50)
+    Frame.Position = UDim2.new(0, 10, 0, 50)
+    Frame.BackgroundTransparency = 1
+    Frame.Visible = (i == 1)
+    Frame.Parent = TabFolder
+    Frames[tabName] = Frame
 
--- Create sidebar buttons
-for i, tabName in ipairs(tabs) do
-    local button = Instance.new("TextButton")
-    button.Size = UDim2.new(1, 0, 0, 40)
-    button.Position = UDim2.new(0, 0, 0, (i - 1) * 45 + 50)
-    button.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-    button.TextColor3 = Color3.fromRGB(255, 255, 255)
-    button.Font = Enum.Font.Gotham
-    button.TextSize = 14
-    button.Text = tabName
-    button.BorderSizePixel = 0
-    button.AutoButtonColor = false
-    button.Parent = Sidebar
-
-    button.MouseEnter:Connect(function()
-        button.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
-    end)
-    button.MouseLeave:Connect(function()
-        button.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-    end)
-
-    button.MouseButton1Click:Connect(function()
-        for _, frame in pairs(contentFrames) do
-            frame.Visible = false
+    Button.MouseButton1Click:Connect(function()
+        for _, f in pairs(TabFolder:GetChildren()) do
+            f.Visible = false
         end
-        PanelTitle.Text = tabName .. " Tab"
-        contentFrames[tabName].Visible = true
+        Frame.Visible = true
+    end)
+
+    Button.MouseEnter:Connect(function()
+        Button.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    end)
+
+    Button.MouseLeave:Connect(function()
+        Button.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
     end)
 end
 
--------------------------------------
--- ACTUAL FUNCTIONALITY
--------------------------------------
+------------------------------------
+-- 🟢 COMBAT TAB
+------------------------------------
+local CombatFrame = Frames["Combat"]
 
--- Combat Tab
-local CombatFrame = contentFrames["Combat"]
-local AimbotEnabled = false
-local SilentAimEnabled = false
-local AimPart = "Head"
+local AimbotEnabled, SilentAimEnabled, NoRecoilEnabled, HitboxExpandEnabled = false, false, false, false
+local HitboxSize = Vector3.new(10, 10, 10)
 
-local AimbotToggle = Instance.new("TextButton")
-AimbotToggle.Size = UDim2.new(0, 200, 0, 30)
-AimbotToggle.Position = UDim2.new(0, 20, 0, 50)
-AimbotToggle.Text = "Enable Aimbot [OFF]"
-AimbotToggle.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-AimbotToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
-AimbotToggle.Font = Enum.Font.Gotham
-AimbotToggle.TextSize = 14
-AimbotToggle.Parent = CombatFrame
+-- Aimbot Toggle
+local AimbotBtn = Instance.new("TextButton")
+AimbotBtn.Size = UDim2.new(0, 200, 0, 30)
+AimbotBtn.Position = UDim2.new(0, 20, 0, 20)
+AimbotBtn.Text = "Aimbot [OFF]"
+AimbotBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+AimbotBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+AimbotBtn.Font = Enum.Font.Gotham
+AimbotBtn.TextSize = 14
+AimbotBtn.Parent = CombatFrame
 
-AimbotToggle.MouseButton1Click:Connect(function()
+AimbotBtn.MouseButton1Click:Connect(function()
     AimbotEnabled = not AimbotEnabled
-    AimbotToggle.Text = "Enable Aimbot ["..(AimbotEnabled and "ON" or "OFF").."]"
+    AimbotBtn.Text = "Aimbot ["..(AimbotEnabled and "ON" or "OFF").."]"
 end)
 
-local function GetClosest()
-    local closest, dist = nil, math.huge
-    local mouse = UserInputService:GetMouseLocation()
-    for _, player in ipairs(Players:GetPlayers()) do
-        if player ~= LocalPlayer and player.Team ~= LocalPlayer.Team and player.Character and player.Character:FindFirstChild(AimPart) then
-            local pos, visible = Camera:WorldToViewportPoint(player.Character[AimPart].Position)
-            if visible then
-                local mag = (Vector2.new(pos.X, pos.Y) - Vector2.new(mouse.X, mouse.Y)).Magnitude
-                if mag < dist then
-                    closest, dist = player, mag
-                end
-            end
-        end
-    end
-    return closest
-end
+-- Silent Aim Toggle
+local SilentBtn = AimbotBtn:Clone()
+SilentBtn.Text = "Silent Aim [OFF]"
+SilentBtn.Position = UDim2.new(0, 20, 0, 60)
+SilentBtn.Parent = CombatFrame
 
-RunService.RenderStepped:Connect(function()
-    if AimbotEnabled then
-        local target = GetClosest()
-        if target and target.Character and target.Character:FindFirstChild(AimPart) then
-            Camera.CFrame = CFrame.new(Camera.CFrame.Position, target.Character[AimPart].Position)
-        end
-    end
+SilentBtn.MouseButton1Click:Connect(function()
+    SilentAimEnabled = not SilentAimEnabled
+    SilentBtn.Text = "Silent Aim ["..(SilentAimEnabled and "ON" or "OFF").."]"
 end)
 
--- Visuals Tab
-local VisualsFrame = contentFrames["Visuals"]
-local ESPEnabled = true
-local Highlights = {}
+-- No Recoil Toggle
+local RecoilBtn = AimbotBtn:Clone()
+RecoilBtn.Text = "No Recoil [OFF]"
+RecoilBtn.Position = UDim2.new(0, 20, 0, 100)
+RecoilBtn.Parent = CombatFrame
 
-local ESPToggle = Instance.new("TextButton")
-ESPToggle.Size = UDim2.new(0, 200, 0, 30)
-ESPToggle.Position = UDim2.new(0, 20, 0, 50)
-ESPToggle.Text = "Enable Box ESP [ON]"
-ESPToggle.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-ESPToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
-ESPToggle.Font = Enum.Font.Gotham
-ESPToggle.TextSize = 14
-ESPToggle.Parent = VisualsFrame
-
-ESPToggle.MouseButton1Click:Connect(function()
-    ESPEnabled = not ESPEnabled
-    ESPToggle.Text = "Enable Box ESP ["..(ESPEnabled and "ON" or "OFF").."]"
+RecoilBtn.MouseButton1Click:Connect(function()
+    NoRecoilEnabled = not NoRecoilEnabled
+    RecoilBtn.Text = "No Recoil ["..(NoRecoilEnabled and "ON" or "OFF").."]"
 end)
 
-RunService.RenderStepped:Connect(function()
-    for _, player in ipairs(Players:GetPlayers()) do
-        if player ~= LocalPlayer and player.Team ~= LocalPlayer.Team and player.Character then
-            if ESPEnabled then
-                if not Highlights[player] then
-                    local highlight = Instance.new("Highlight")
-                    highlight.Adornee = player.Character
-                    highlight.FillColor = Color3.fromRGB(0, 255, 0)
-                    highlight.FillTransparency = 0.5
-                    highlight.OutlineTransparency = 0
-                    highlight.Parent = player.Character
-                    Highlights[player] = highlight
-                end
-            else
-                if Highlights[player] then
-                    Highlights[player]:Destroy()
-                    Highlights[player] = nil
-                end
-            end
-        end
+-- Hitbox Expander Toggle
+local HitboxBtn = AimbotBtn:Clone()
+HitboxBtn.Text = "Hitbox Expander [OFF]"
+HitboxBtn.Position = UDim2.new(0, 20, 0, 140)
+HitboxBtn.Parent = CombatFrame
+
+HitboxBtn.MouseButton1Click:Connect(function()
+    HitboxExpandEnabled = not HitboxExpandEnabled
+    HitboxBtn.Text = "Hitbox Expander ["..(HitboxExpandEnabled and "ON" or "OFF").."]"
+end)
+
+------------------------------------
+-- 💣 EXPLOIT TAB
+------------------------------------
+local ExploitFrame = Frames["Exploit"]
+local WalkSpeedEnabled, InfiniteJumpEnabled, GodModeEnabled, FlyEnabled = false, false, false, false
+
+-- Walk Speed Toggle
+local WSBtn = AimbotBtn:Clone()
+WSBtn.Text = "Walk Speed [OFF]"
+WSBtn.Position = UDim2.new(0, 20, 0, 20)
+WSBtn.Parent = ExploitFrame
+
+WSBtn.MouseButton1Click:Connect(function()
+    WalkSpeedEnabled = not WalkSpeedEnabled
+    WSBtn.Text = "Walk Speed ["..(WalkSpeedEnabled and "ON" or "OFF").."]"
+    if WalkSpeedEnabled then
+        LocalPlayer.Character.Humanoid.WalkSpeed = 30
+    else
+        LocalPlayer.Character.Humanoid.WalkSpeed = 16
     end
 end)
 
--- Exploit Tab
-local ExploitFrame = contentFrames["Exploit"]
+-- Infinite Jump
+local IJBtn = WSBtn:Clone()
+IJBtn.Text = "Infinite Jump [OFF]"
+IJBtn.Position = UDim2.new(0, 20, 0, 60)
+IJBtn.Parent = ExploitFrame
 
-local GodModeButton = Instance.new("TextButton")
-GodModeButton.Size = UDim2.new(0, 200, 0, 30)
-GodModeButton.Position = UDim2.new(0, 20, 0, 50)
-GodModeButton.Text = "Enable God Mode"
-GodModeButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-GodModeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-GodModeButton.Font = Enum.Font.Gotham
-GodModeButton.TextSize = 14
-GodModeButton.Parent = ExploitFrame
+IJBtn.MouseButton1Click:Connect(function()
+    InfiniteJumpEnabled = not InfiniteJumpEnabled
+    IJBtn.Text = "Infinite Jump ["..(InfiniteJumpEnabled and "ON" or "OFF").."]"
+end)
 
-GodModeButton.MouseButton1Click:Connect(function()
-    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-        LocalPlayer.Character.Humanoid.Name = "1"
-        local clone = LocalPlayer.Character.Humanoid:Clone()
-        clone.Name = "Humanoid"
-        clone.Parent = LocalPlayer.Character
-        wait(0.1)
-        LocalPlayer.Character["1"]:Destroy()
-        workspace.CurrentCamera.CameraSubject = LocalPlayer.Character.Humanoid
-        print("God Mode Activated!")
+UserInputService.JumpRequest:Connect(function()
+    if InfiniteJumpEnabled then
+        LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):ChangeState("Jumping")
     end
 end)
 
--- Miscellaneous Tab
-local MiscFrame = contentFrames["Miscellaneous"]
+-- God Mode
+local GMBtn = WSBtn:Clone()
+GMBtn.Text = "God Mode [OFF]"
+GMBtn.Position = UDim2.new(0, 20, 0, 100)
+GMBtn.Parent = ExploitFrame
 
-local CloseKeybind = Instance.new("TextButton")
-CloseKeybind.Size = UDim2.new(0, 200, 0, 30)
-CloseKeybind.Position = UDim2.new(0, 20, 0, 50)
-CloseKeybind.Text = "Toggle UI [Insert]"
-CloseKeybind.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-CloseKeybind.TextColor3 = Color3.fromRGB(255, 255, 255)
-CloseKeybind.Font = Enum.Font.Gotham
-CloseKeybind.TextSize = 14
-CloseKeybind.Parent = MiscFrame
+GMBtn.MouseButton1Click:Connect(function()
+    GodModeEnabled = not GodModeEnabled
+    GMBtn.Text = "God Mode ["..(GodModeEnabled and "ON" or "OFF").."]"
+    -- Placeholder logic (real god mode needs hooking or custom methods)
+end)
 
-local UISOpen = true
-UserInputService.InputBegan:Connect(function(input)
-    if input.KeyCode == Enum.KeyCode.Insert then
-        UISOpen = not UISOpen
-        SkyWareGUI.Enabled = UISOpen
+------------------------------------
+-- 🎨 SKIN CHANGER TAB
+------------------------------------
+local SkinFrame = Frames["Skin Changer"]
+
+local SkinLabel = Instance.new("TextLabel")
+SkinLabel.Size = UDim2.new(0, 300, 0, 30)
+SkinLabel.Position = UDim2.new(0, 20, 0, 20)
+SkinLabel.Text = "Skin changer placeholder (to be added)"
+SkinLabel.BackgroundTransparency = 1
+SkinLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+SkinLabel.Font = Enum.Font.Gotham
+SkinLabel.TextSize = 14
+SkinLabel.Parent = SkinFrame
+
+------------------------------------
+-- ⚙️ MISC TAB
+------------------------------------
+local MiscFrame = Frames["Misc"]
+
+local CrosshairBtn = AimbotBtn:Clone()
+CrosshairBtn.Text = "Toggle Crosshair [OFF]"
+CrosshairBtn.Position = UDim2.new(0, 20, 0, 20)
+CrosshairBtn.Parent = MiscFrame
+
+CrosshairBtn.MouseButton1Click:Connect(function()
+    -- Placeholder crosshair logic
+end)
+
+local CloseKeybindLabel = Instance.new("TextLabel")
+CloseKeybindLabel.Size = UDim2.new(0, 300, 0, 30)
+CloseKeybindLabel.Position = UDim2.new(0, 20, 0, 60)
+CloseKeybindLabel.Text = "Press Right Ctrl to toggle UI"
+CloseKeybindLabel.BackgroundTransparency = 1
+CloseKeybindLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+CloseKeybindLabel.Font = Enum.Font.Gotham
+CloseKeybindLabel.TextSize = 14
+CloseKeybindLabel.Parent = MiscFrame
+
+UserInputService.InputBegan:Connect(function(input, gpe)
+    if input.KeyCode == Enum.KeyCode.RightControl then
+        MainFrame.Visible = not MainFrame.Visible
     end
 end)
 
--------------------------------------
+------------------------------------
+-- ✅ END OF BIG MEGA SCRIPT
+------------------------------------
 
--- Show default first tab
-contentFrames["Combat"].Visible = true
-PanelTitle.Text = "Combat Tab"
+print("SkyWare V2 Arsenal Mega Hub loaded!")
