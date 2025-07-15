@@ -1,8 +1,8 @@
--- ✅ Full SkyWare V2 Arsenal Script (Final with Real-Time Health Bar)
+-- ✅ SkyWare V3 Arsenal Script (With Trigger Bot)
 
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 local Window = Rayfield:CreateWindow({
-    Name = "SkyWare V2 - Arsenal",
+    Name = "SkyWare V3 - Arsenal",
     LoadingTitle = "SKYWARE 💜",
     LoadingSubtitle = "by Jeeqz11",
     ConfigurationSaving = { Enabled = false },
@@ -21,6 +21,7 @@ local UIS = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 
 local AimbotEnabled, BoxESPEnabled, FOVRadius, NameESPEnabled, TracerESPEnabled = true, true, 150, true, true
+local TriggerBotEnabled, TriggerDelay = false, 0.05
 local AimPart, Holding = "Head", false
 
 local FOVCircle = Drawing.new("Circle")
@@ -76,6 +77,30 @@ RunService.RenderStepped:Connect(function()
     end
     local mouse = UIS:GetMouseLocation()
     FOVCircle.Position = Vector2.new(mouse.X, mouse.Y)
+end)
+
+local function GetTargetUnderCrosshair()
+    local mousePos = UIS:GetMouseLocation()
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer and player.Team ~= LocalPlayer.Team and player.Character and player.Character:FindFirstChild("Head") then
+            local pos, onScreen = Camera:WorldToViewportPoint(player.Character.Head.Position)
+            if onScreen and (Vector2.new(pos.X, pos.Y) - Vector2.new(mousePos.X, mousePos.Y)).Magnitude < 10 then
+                return player
+            end
+        end
+    end
+    return nil
+end
+
+RunService.RenderStepped:Connect(function()
+    if TriggerBotEnabled then
+        local target = GetTargetUnderCrosshair()
+        if target then
+            mouse1press()
+            wait(TriggerDelay)
+            mouse1release()
+        end
+    end
 end)
 
 local function UpdateESP()
@@ -158,6 +183,7 @@ end
 RunService.RenderStepped:Connect(UpdateESP)
 
 CombatTab:CreateToggle({ Name = "Aimbot (Hold RMB)", CurrentValue = AimbotEnabled, Callback = function(Value) AimbotEnabled = Value end })
+CombatTab:CreateToggle({ Name = "Trigger Bot", CurrentValue = TriggerBotEnabled, Callback = function(Value) TriggerBotEnabled = Value end })
 CombatTab:CreateSlider({ Name = "FOV Radius", Range = {50, 300}, Increment = 1, CurrentValue = FOVRadius, Callback = function(Value) FOVRadius = Value; FOVCircle.Radius = Value end })
 
 VisualTab:CreateToggle({ Name = "ESP Boxes", CurrentValue = BoxESPEnabled, Callback = function(Value) BoxESPEnabled = Value end })
@@ -166,6 +192,6 @@ VisualTab:CreateToggle({ Name = "ESP Tracers", CurrentValue = TracerESPEnabled, 
 VisualTab:CreateToggle({ Name = "FOV Circle", CurrentValue = true, Callback = function(Value) FOVCircle.Visible = Value end })
 
 MiscTab:CreateKeybind({ Name = "Toggle UI", CurrentKeybind = "RightControl", HoldToInteract = false, Callback = function() Rayfield:Toggle() end })
-MiscTab:CreateParagraph({ Title = "SkyWare V2 💜", Content = "Aimbot (Hard Lock) & Full-Body ESP with Names, Tracers, Real-Time Health\nFinal Stable Version 💜" })
+MiscTab:CreateParagraph({ Title = "SkyWare V3 💜", Content = "Aimbot (Hard Lock), Trigger Bot, Full-Body ESP with Names, Tracers, Real-Time Health\nFinal V3 Edition 💜" })
 
-print("✅ SkyWare V2 Fully Loaded with Real-Time Health Bar & 100% Lock-On!")
+print("✅ SkyWare V3 Fully Loaded with Trigger Bot, Real-Time Health Bar & Hard Lock!")
