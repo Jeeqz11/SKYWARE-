@@ -1,1 +1,30 @@
+-- ✅ SkyWare V2 Arsenal Script with Key System and Loader
 
+local Key = "SKYWARE2025"
+
+local function PromptKey()
+    local userKey = Rayfield:Prompt({
+        Title = "SkyWare Key System",
+        Content = "Enter your access key to continue",
+        Placeholder = "Enter Key Here",
+        Buttons = {
+            {Text = "Submit", Callback = function(input)
+                if input == Key then
+                    print("✅ Key Accepted. Loading script...")
+                    loadstring(game:HttpGet("https://raw.githubusercontent.com/Jeeqz11/SKYWARE-/main/skywarev2.lua"))()
+                    return true
+                else
+                    print("❌ Invalid Key. Access Denied.")
+                    return false
+                end
+            end}
+        }
+    })
+    return userKey
+end
+
+if not PromptKey() then
+    while true do wait() end -- Freeze if invalid
+end
+
+print("✅ SkyWare V2 Loader with Key System Executed!")
