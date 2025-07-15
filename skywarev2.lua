@@ -1,77 +1,38 @@
--- SkyWare V2 - Arsenal Ultimate Mega Hub
--- Zephirion-inspired custom UI, all tabs included
+-- // SkyWare V2 Arsenal (Basic Version with Rayfield) \\ --
 
-local UserInputService = game:GetService("UserInputService")
-local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
-local Camera = workspace.CurrentCamera
 local LocalPlayer = Players.LocalPlayer
+local Mouse = LocalPlayer:GetMouse()
+local RunService = game:GetService("RunService")
+local Camera = workspace.CurrentCamera
 
-local Zephirion = {} -- main table for UI & logic
-Zephirion.WindowOpen = true
-
--- Watermark
-local ScreenGui = Instance.new("ScreenGui", game.CoreGui)
-local Watermark = Instance.new("TextLabel", ScreenGui)
-Watermark.Text = "SkyWare V2 - Arsenal | FPS: 0"
-Watermark.Position = UDim2.new(0, 10, 0, 10)
-Watermark.Size = UDim2.new(0, 300, 0, 25)
-Watermark.BackgroundTransparency = 1
-Watermark.TextColor3 = Color3.fromRGB(255,255,255)
-Watermark.Font = Enum.Font.Gotham
-Watermark.TextSize = 18
-Watermark.TextStrokeTransparency = 0.5
-
--- FPS counter logic
-local lastTime = tick()
-local frames = 0
-RunService.RenderStepped:Connect(function()
-    frames = frames + 1
-    if tick() - lastTime >= 1 then
-        Watermark.Text = "SkyWare V2 - Arsenal | FPS: "..frames
-        lastTime = tick()
-        frames = 0
-    end
-end)
-
--- Default settings
-local AimbotEnabled = true
-local ESPEnabled = true
-local FOVEnabled = true
-local BoxesEnabled = true
-local SkeletonEnabled = false
-local SilentAimEnabled = false
-local CrosshairEnabled = false
-local CrosshairShape = "Dot"
-local CrosshairColor = Color3.fromRGB(255, 255, 255)
-local CrosshairSize = 6
-
--- Crosshair
-local CrossFrame = Instance.new("Frame", game.CoreGui)
-CrossFrame.Size = UDim2.new(0, CrosshairSize, 0, CrosshairSize)
-CrossFrame.Position = UDim2.new(0.5, -CrosshairSize/2, 0.5, -CrosshairSize/2)
-CrossFrame.BackgroundColor3 = CrosshairColor
-CrossFrame.BorderSizePixel = 0
-CrossFrame.Visible = CrosshairEnabled
-
--- Combat Logic (Aimbot)
-local AimPart = "Head"
-local AimbotKey = Enum.UserInputType.MouseButton2
-local Holding = false
-local FOVRadius = 120
+local ESPEnabled = false
+local AimbotEnabled = false
+local AimbotPart = "Head"
+local FOV = 120
 local Smoothness = 0.2
+local Holding = false
 
-local function GetClosest()
-    local closest, dist = nil, math.huge
-    local mouse = UserInputService:GetMouseLocation()
+-- // FOV Circle
+local FOVCircle = Drawing.new("Circle")
+FOVCircle.Color = Color3.fromRGB(255, 255, 255)
+FOVCircle.Thickness = 1
+FOVCircle.Filled = false
+FOVCircle.Radius = FOV
+FOVCircle.Visible = true
+
+-- // Get Closest Enemy
+local function GetClosestEnemy()
+    local closest = nil
+    local shortestDistance = math.huge
     for _, player in ipairs(Players:GetPlayers()) do
-        if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild(AimPart) then
-            local pos, visible = Camera:WorldToViewportPoint(player.Character[AimPart].Position)
-            if visible then
-                local mag = (Vector2.new(pos.X, pos.Y) - Vector2.new(mouse.X, mouse.Y)).Magnitude
-                if mag < dist and mag < FOVRadius then
+        if player ~= LocalPlayer and player.Team ~= LocalPlayer.Team and player.Character and player.Character:FindFirstChild(AimbotPart) then
+            local pos, onScreen = Camera:WorldToViewportPoint(player.Character[AimbotPart].Position)
+            if onScreen then
+                local dist = (Vector2.new(Mouse.X, Mouse.Y) - Vector2.new(pos.X, pos.Y)).Magnitude
+                if dist < shortestDistance and dist < FOV then
+                    shortestDistance = dist
                     closest = player
-                    dist = mag
                 end
             end
         end
@@ -79,98 +40,157 @@ local function GetClosest()
     return closest
 end
 
+-- // Aimbot Logic
+RunService.RenderStepped:Connect(function()
+    if Holding and AimbotEnabled then
+        local target = GetClosestEnemy()
+        if target and target.Character and target.Character:FindFirstChild(AimbotPart) then
+            local aimPos = target.Character[AimbotPart].Position
+            Camera.CFrame = Camera.CFrame:Lerp(CFrame.new(Camera.CFrame.Position, aimPos), Smoothness)
+        end
+    end
+end)
+
+-- // FOV Circle Follow Mouse
+RunService.RenderStepped:Connect(function()
+    FOVCircle.Position = Vector2.new(Mouse.X, Mouse.Y + 36)
+    FOVCircle.Radius = FOV
+end)
+
+-- // Right Mouse Input
+local UserInputService = game:GetService("UserInputService")
 UserInputService.InputBegan:Connect(function(input)
-    if input.UserInputType == AimbotKey then Holding = true end
+    if input.UserInputType == Enum.UserInputType.MouseButton2 then
+        Holding = true
+    end
 end)
 
 UserInputService.InputEnded:Connect(function(input)
-    if input.UserInputType == AimbotKey then Holding = false end
-end)
-
-RunService.RenderStepped:Connect(function()
-    if AimbotEnabled and Holding then
-        local target = GetClosest()
-        if target and target.Character and target.Character:FindFirstChild(AimPart) then
-            local targetPos = target.Character[AimPart].Position
-            Camera.CFrame = Camera.CFrame:Lerp(CFrame.new(Camera.CFrame.Position, targetPos), Smoothness)
-        end
+    if input.UserInputType == Enum.UserInputType.MouseButton2 then
+        Holding = false
     end
 end)
 
--- ESP
-local function CreateHighlight(player)
-    if not player.Character:FindFirstChild("Highlight") then
-        local highlight = Instance.new("Highlight")
-        highlight.FillColor = Color3.fromRGB(0, 255, 0)
-        highlight.FillTransparency = 0.5
-        highlight.OutlineTransparency = 0
-        highlight.Adornee = player.Character
-        highlight.Parent = player.Character
+-- // ESP
+local Highlights = {}
+
+local function EnableESP()
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer and player.Team ~= LocalPlayer.Team and player.Character then
+            local highlight = Instance.new("Highlight")
+            highlight.Name = "SkyWareESP"
+            highlight.FillColor = Color3.fromRGB(0, 255, 0)
+            highlight.FillTransparency = 0.5
+            highlight.OutlineTransparency = 0
+            highlight.Adornee = player.Character
+            highlight.Parent = player.Character
+            Highlights[player] = highlight
+        end
     end
 end
 
-RunService.RenderStepped:Connect(function()
-    if ESPEnabled then
-        for _, player in ipairs(Players:GetPlayers()) do
-            if player ~= LocalPlayer and player.Team ~= LocalPlayer.Team and player.Character then
-                if BoxesEnabled then
-                    CreateHighlight(player)
-                end
-            end
+local function DisableESP()
+    for _, player in ipairs(Players:GetPlayers()) do
+        if Highlights[player] then
+            Highlights[player]:Destroy()
+            Highlights[player] = nil
         end
-    end
-end)
-
--- Exploits
-local function EnableGodMode()
-    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-        LocalPlayer.Character.Humanoid.Name = "1"
-        local newHumanoid = LocalPlayer.Character["1"]:Clone()
-        newHumanoid.Parent = LocalPlayer.Character
-        newHumanoid.Name = "Humanoid"
-        LocalPlayer.Character["1"]:Destroy()
-        LocalPlayer.Character.Humanoid.DisplayDistanceType = "None"
     end
 end
 
-local function InfiniteJump()
-    UserInputService.JumpRequest:Connect(function()
-        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-            LocalPlayer.Character.Humanoid:ChangeState("Jumping")
+Players.PlayerAdded:Connect(function(p)
+    p.CharacterAdded:Connect(function()
+        if ESPEnabled then
+            wait(1)
+            EnableESP()
         end
     end)
-end
-
-local function WalkSpeed(speed)
-    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-        LocalPlayer.Character.Humanoid.WalkSpeed = speed
-    end
-end
-
--- Skins
-local function ApplyKnifeSkin(skin)
-    print("Applied Knife Skin:", skin)
-end
-
-local function ApplyGunSkin(skin)
-    print("Applied Gun Skin:", skin)
-end
-
--- Crosshair
-RunService.RenderStepped:Connect(function()
-    CrossFrame.Position = UDim2.new(0.5, -CrosshairSize/2, 0.5, -CrosshairSize/2)
-    CrossFrame.Size = UDim2.new(0, CrosshairSize, 0, CrosshairSize)
-    CrossFrame.BackgroundColor3 = CrosshairColor
-    CrossFrame.Visible = CrosshairEnabled
 end)
 
--- Toggle UI Keybind
-UserInputService.InputBegan:Connect(function(input)
-    if input.KeyCode == Enum.KeyCode.RightControl then
-        Zephirion.WindowOpen = not Zephirion.WindowOpen
-        ScreenGui.Enabled = Zephirion.WindowOpen
-        CrossFrame.Visible = Zephirion.WindowOpen and CrosshairEnabled
-    end
-end)
+-- // UI (Rayfield)
+local Rayfield = loadstring(game:HttpGet('https://raw.githubusercontent.com/shlexware/Rayfield/main/source'))()
 
-print("✅ SkyWare V2 - Arsenal Ultra Mega Final loaded!")
+local Window = Rayfield:CreateWindow({
+    Name = "SkyWare V2 - Arsenal",
+    LoadingTitle = "SkyWare V2",
+    LoadingSubtitle = "by Jeeqz11",
+    ConfigurationSaving = {
+        Enabled = true,
+        FolderName = "SkyWareV2",
+        FileName = "ArsenalConfig"
+    },
+    Discord = {
+        Enabled = false
+    },
+    KeySystem = false
+})
+
+-- Tabs
+local AimbotTab = Window:CreateTab("Aimbot")
+local VisualsTab = Window:CreateTab("Visuals")
+
+-- Aimbot Toggles
+AimbotTab:CreateToggle({
+    Name = "Enable Aimbot",
+    CurrentValue = false,
+    Callback = function(Value)
+        AimbotEnabled = Value
+    end,
+})
+
+AimbotTab:CreateDropdown({
+    Name = "Aim Part",
+    Options = { "Head", "Torso" },
+    CurrentOption = "Head",
+    Callback = function(Value)
+        AimbotPart = Value
+    end,
+})
+
+AimbotTab:CreateSlider({
+    Name = "Smoothness",
+    Range = {0.1, 1},
+    Increment = 0.05,
+    Suffix = "",
+    CurrentValue = 0.2,
+    Callback = function(Value)
+        Smoothness = Value
+    end,
+})
+
+AimbotTab:CreateSlider({
+    Name = "FOV Radius",
+    Range = {50, 300},
+    Increment = 10,
+    Suffix = "",
+    CurrentValue = 120,
+    Callback = function(Value)
+        FOV = Value
+    end,
+})
+
+-- Visuals Toggles
+VisualsTab:CreateToggle({
+    Name = "Enable ESP",
+    CurrentValue = false,
+    Callback = function(Value)
+        ESPEnabled = Value
+        if Value then
+            EnableESP()
+        else
+            DisableESP()
+        end
+    end,
+})
+
+VisualsTab:CreateColorPicker({
+    Name = "ESP Color (Box)",
+    Color = Color3.fromRGB(0, 255, 0),
+    Callback = function(Color)
+        for _, highlight in pairs(Highlights) do
+            highlight.FillColor = Color
+        end
+    end,
+})
+
+Rayfield:LoadConfiguration()
