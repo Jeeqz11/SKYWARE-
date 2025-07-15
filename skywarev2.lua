@@ -1,4 +1,4 @@
--- SkyWare V2 Arsenal FULL Cheat 💜 (Fixed Execution)
+-- SkyWare V2 Arsenal FULL Cheat 💜 (Added Kill Aura)
 
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
@@ -6,14 +6,13 @@ local Camera = workspace.CurrentCamera
 local RunService = game:GetService("RunService")
 local UIS = game:GetService("UserInputService")
 
-local ESPEnabled, EnemyOnly, AimbotEnabled = true, true, true
+local ESPEnabled, EnemyOnly, AimbotEnabled, SilentAimEnabled, KillAuraEnabled = true, true, true, true, true
 local ESPObjects = {}
 local AimPart, Holding, FOVRadius, Smoothness = "Head", false, 150, 0.2
 
--- Fix: Wait for character to load
 repeat task.wait() until LocalPlayer and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
 
--- Clear ESP
+-- ESP functions
 local function ClearESP()
     for _, v in pairs(ESPObjects) do
         if v.Box then v.Box:Remove() end
@@ -21,7 +20,6 @@ local function ClearESP()
     ESPObjects = {}
 end
 
--- Create ESP
 local function CreateESP(player)
     if player == LocalPlayer then return end
     local box = Drawing.new("Square")
@@ -32,7 +30,6 @@ local function CreateESP(player)
     ESPObjects[player] = {Box = box}
 end
 
--- Update ESP
 local function UpdateESP()
     if not ESPEnabled then ClearESP() return end
     for _, player in pairs(Players:GetPlayers()) do
@@ -93,6 +90,23 @@ local function GetClosestTarget()
     return closest
 end
 
+-- Silent Aim Hook
+local mt = getrawmetatable(game)
+local oldIndex = mt.__index
+setreadonly(mt, false)
+
+mt.__index = function(self, k)
+    if SilentAimEnabled and tostring(self) == "Mouse" and (k == "Hit" or k == "Target") then
+        local target = GetClosestTarget()
+        if target and target.Character and target.Character:FindFirstChild(AimPart) then
+            return target.Character[AimPart].CFrame
+        end
+    end
+    return oldIndex(self, k)
+end
+
+setreadonly(mt, true)
+
 RunService.RenderStepped:Connect(function()
     if AimbotEnabled and Holding then
         local target = GetClosestTarget()
@@ -102,27 +116,25 @@ RunService.RenderStepped:Connect(function()
     end
     local mouse = UIS:GetMouseLocation()
     FOVCircle.Position = Vector2.new(mouse.X, mouse.Y)
+
+    -- Kill Aura
+    if KillAuraEnabled then
+        for _, player in ipairs(Players:GetPlayers()) do
+            if player ~= LocalPlayer and player.Team ~= LocalPlayer.Team and player.Character and player.Character:FindFirstChildOfClass("Humanoid") and player.Character:FindFirstChild("HumanoidRootPart") then
+                local distance = (LocalPlayer.Character.HumanoidRootPart.Position - player.Character.HumanoidRootPart.Position).Magnitude
+                if distance < 20 then
+                    player.Character:FindFirstChildOfClass("Humanoid").Health = 0
+                end
+            end
+        end
+    end
 end)
 
--- Stable Exploits
-local function EnableInfiniteJump()
-    UIS.JumpRequest:Connect(function()
-        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
-            LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):ChangeState("Jumping")
-        end
-    end)
-end
-
-local function EnableGodMode()
-    local hum = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
-    if hum then
-        hum:GetPropertyChangedSignal("Health"):Connect(function()
-            if hum.Health < hum.MaxHealth then hum.Health = hum.MaxHealth end
-        end)
+-- Infinite Jump
+UIS.JumpRequest:Connect(function()
+    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
+        LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):ChangeState("Jumping")
     end
-end
+end)
 
-EnableInfiniteJump()
-EnableGodMode()
-
-print("✅ SkyWare V2 FULL Cheat fixed and fully loaded!")
+print("✅ SkyWare V2 Cheat loaded: ESP, Aimbot, Silent Aim, Infinite Jump, Kill Aura!")
