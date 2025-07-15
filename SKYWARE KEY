@@ -1,18 +1,3 @@
-- ✅ SkyWare V2 Arsenal Script with Custom Key GUI and Multiple Keys
-
-local keys = {
-    "SKYWARE-ABCD12",
-    "SKYWARE-EFGH34",
-    "SKYWARE-IJKL56",
-    "SKYWARE-MNOP78",
-    "SKYWARE-QRST90",
-    "SKYWARE-UVWX12",
-    "SKYWARE-YZAB34",
-    "SKYWARE-CDEF56",
-    "SKYWARE-GHIJ78",
-    "SKYWARE-KLMN90"
-}
-
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local ScreenGui = Instance.new("ScreenGui")
@@ -41,13 +26,13 @@ Title.TextSize = 20
 Title.Parent = Frame
 
 TextBox.PlaceholderText = "Enter Key Here"
+TextBox.ClearTextOnFocus = false
 TextBox.Size = UDim2.new(1, -20, 0, 40)
 TextBox.Position = UDim2.new(0, 10, 0, 60)
 TextBox.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 TextBox.TextColor3 = Color3.new(1, 1, 1)
 TextBox.Font = Enum.Font.SourceSans
 TextBox.TextSize = 18
-TextBox.ClearTextOnFocus = false
 TextBox.Parent = Frame
 
 SubmitButton.Text = "Submit"
@@ -59,25 +44,31 @@ SubmitButton.Font = Enum.Font.SourceSansBold
 SubmitButton.TextSize = 20
 SubmitButton.Parent = Frame
 
-SubmitButton.MouseButton1Click:Connect(function()
-    if checkKey(TextBox.Text) then
-        print("✅ Key Accepted. Loading script...")
-        ScreenGui:Destroy()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/Jeeqz11/SKYWARE-/main/skywarev2.lua"))()
-    else
-        SubmitButton.Text = "❌ Wrong Key"
-        wait(1)
-        SubmitButton.Text = "Submit"
-    end
-end)
+local Keys = {
+    "SKYWARE-ABC123",
+    "SKYWARE-DEF456",
+    "SKYWARE-GHI789",
+    "SKYWARE-JKL101",
+    "SKYWARE-MNO112",
+    "SKYWARE-PQR131",
+    "SKYWARE-STU415",
+    "SKYWARE-VWX161",
+    "SKYWARE-YZA718",
+    "SKYWARE-BCD192"
+}
 
-function checkKey(userKey)
-    for _, k in ipairs(keys) do
-        if userKey == k then
-            return true
+SubmitButton.MouseButton1Click:Connect(function()
+    for _, validKey in pairs(Keys) do
+        if TextBox.Text == validKey then
+            print("✅ Key Accepted. Loading script...")
+            ScreenGui:Destroy()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/Jeeqz11/SKYWARE-/main/skywarev2.lua"))()
+            return
         end
     end
-    return false
-end
+    SubmitButton.Text = "❌ Wrong Key"
+    wait(1)
+    SubmitButton.Text = "Submit"
+end)
 
-print("✅ SkyWare V2 Custom Key GUI with Multiple Keys Loaded!")
+print("✅ SkyWare V2 Multi-Key GUI Loaded!")
