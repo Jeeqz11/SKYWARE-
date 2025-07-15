@@ -1,4 +1,17 @@
--- ✅ SkyWare V2 Arsenal Script with Custom Key GUI and Loader
+- ✅ SkyWare V2 Arsenal Script with Custom Key GUI and Multiple Keys
+
+local keys = {
+    "SKYWARE-ABCD12",
+    "SKYWARE-EFGH34",
+    "SKYWARE-IJKL56",
+    "SKYWARE-MNOP78",
+    "SKYWARE-QRST90",
+    "SKYWARE-UVWX12",
+    "SKYWARE-YZAB34",
+    "SKYWARE-CDEF56",
+    "SKYWARE-GHIJ78",
+    "SKYWARE-KLMN90"
+}
 
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
@@ -34,6 +47,7 @@ TextBox.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 TextBox.TextColor3 = Color3.new(1, 1, 1)
 TextBox.Font = Enum.Font.SourceSans
 TextBox.TextSize = 18
+TextBox.ClearTextOnFocus = false
 TextBox.Parent = Frame
 
 SubmitButton.Text = "Submit"
@@ -45,10 +59,8 @@ SubmitButton.Font = Enum.Font.SourceSansBold
 SubmitButton.TextSize = 20
 SubmitButton.Parent = Frame
 
-local Key = "SKYWARE2025"
-
 SubmitButton.MouseButton1Click:Connect(function()
-    if TextBox.Text == Key then
+    if checkKey(TextBox.Text) then
         print("✅ Key Accepted. Loading script...")
         ScreenGui:Destroy()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/Jeeqz11/SKYWARE-/main/skywarev2.lua"))()
@@ -59,4 +71,13 @@ SubmitButton.MouseButton1Click:Connect(function()
     end
 end)
 
-print("✅ SkyWare V2 Custom Key GUI Loaded!")
+function checkKey(userKey)
+    for _, k in ipairs(keys) do
+        if userKey == k then
+            return true
+        end
+    end
+    return false
+end
+
+print("✅ SkyWare V2 Custom Key GUI with Multiple Keys Loaded!")
