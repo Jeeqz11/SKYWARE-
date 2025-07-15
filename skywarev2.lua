@@ -1,19 +1,30 @@
--- // SkyWare V2 Arsenal (Basic Version with Rayfield) \\ --
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/xHeptc/Kavo-UI-Library/main/source.lua"))()
 
+local Window = Library.CreateLib("SkyWare V2 - Arsenal", "Sentinel")
+
+-- Tabs
+local AimbotTab = Window:NewTab("Aimbot")
+local VisualsTab = Window:NewTab("Visuals")
+
+-- Sections
+local AimbotSection = AimbotTab:NewSection("Aimbot Settings")
+local VisualsSection = VisualsTab:NewSection("ESP Settings")
+
+-- Variables
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local Mouse = LocalPlayer:GetMouse()
 local RunService = game:GetService("RunService")
 local Camera = workspace.CurrentCamera
 
-local ESPEnabled = false
 local AimbotEnabled = false
+local ESPEnabled = false
 local AimbotPart = "Head"
 local FOV = 120
 local Smoothness = 0.2
 local Holding = false
 
--- // FOV Circle
+-- FOV Circle
 local FOVCircle = Drawing.new("Circle")
 FOVCircle.Color = Color3.fromRGB(255, 255, 255)
 FOVCircle.Thickness = 1
@@ -21,7 +32,7 @@ FOVCircle.Filled = false
 FOVCircle.Radius = FOV
 FOVCircle.Visible = true
 
--- // Get Closest Enemy
+-- Functions
 local function GetClosestEnemy()
     local closest = nil
     local shortestDistance = math.huge
@@ -40,7 +51,7 @@ local function GetClosestEnemy()
     return closest
 end
 
--- // Aimbot Logic
+-- Aimbot logic
 RunService.RenderStepped:Connect(function()
     if Holding and AimbotEnabled then
         local target = GetClosestEnemy()
@@ -51,13 +62,13 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
--- // FOV Circle Follow Mouse
+-- FOV circle update
 RunService.RenderStepped:Connect(function()
     FOVCircle.Position = Vector2.new(Mouse.X, Mouse.Y + 36)
     FOVCircle.Radius = FOV
 end)
 
--- // Right Mouse Input
+-- Right mouse input
 local UserInputService = game:GetService("UserInputService")
 UserInputService.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton2 then
@@ -71,28 +82,30 @@ UserInputService.InputEnded:Connect(function(input)
     end
 end)
 
--- // ESP
+-- ESP
 local Highlights = {}
 
 local function EnableESP()
     for _, player in ipairs(Players:GetPlayers()) do
         if player ~= LocalPlayer and player.Team ~= LocalPlayer.Team and player.Character then
-            local highlight = Instance.new("Highlight")
-            highlight.Name = "SkyWareESP"
-            highlight.FillColor = Color3.fromRGB(0, 255, 0)
-            highlight.FillTransparency = 0.5
-            highlight.OutlineTransparency = 0
-            highlight.Adornee = player.Character
-            highlight.Parent = player.Character
-            Highlights[player] = highlight
+            if not player.Character:FindFirstChild("SkyWareESP") then
+                local highlight = Instance.new("Highlight")
+                highlight.Name = "SkyWareESP"
+                highlight.FillColor = Color3.fromRGB(0, 255, 0)
+                highlight.FillTransparency = 0.5
+                highlight.OutlineTransparency = 0
+                highlight.Adornee = player.Character
+                highlight.Parent = player.Character
+                Highlights[player] = highlight
+            end
         end
     end
 end
 
 local function DisableESP()
     for _, player in ipairs(Players:GetPlayers()) do
-        if Highlights[player] then
-            Highlights[player]:Destroy()
+        if player.Character and player.Character:FindFirstChild("SkyWareESP") then
+            player.Character.SkyWareESP:Destroy()
             Highlights[player] = nil
         end
     end
@@ -107,90 +120,36 @@ Players.PlayerAdded:Connect(function(p)
     end)
 end)
 
--- // UI (Rayfield)
-local Rayfield = loadstring(game:HttpGet('https://raw.githubusercontent.com/shlexware/Rayfield/main/source'))()
+-- Aimbot UI
+AimbotSection:NewToggle("Enable Aimbot", "Toggle aimbot on/off", false, function(value)
+    AimbotEnabled = value
+end)
 
-local Window = Rayfield:CreateWindow({
-    Name = "SkyWare V2 - Arsenal",
-    LoadingTitle = "SkyWare V2",
-    LoadingSubtitle = "by Jeeqz11",
-    ConfigurationSaving = {
-        Enabled = true,
-        FolderName = "SkyWareV2",
-        FileName = "ArsenalConfig"
-    },
-    Discord = {
-        Enabled = false
-    },
-    KeySystem = false
-})
+AimbotSection:NewDropdown("Aim Part", "Select target part", {"Head", "Torso"}, function(option)
+    AimbotPart = option
+end)
 
--- Tabs
-local AimbotTab = Window:CreateTab("Aimbot")
-local VisualsTab = Window:CreateTab("Visuals")
+AimbotSection:NewSlider("Smoothness", "Aimbot smoothness", 1, 0.1, 0.2, function(value)
+    Smoothness = value
+end)
 
--- Aimbot Toggles
-AimbotTab:CreateToggle({
-    Name = "Enable Aimbot",
-    CurrentValue = false,
-    Callback = function(Value)
-        AimbotEnabled = Value
-    end,
-})
+AimbotSection:NewSlider("FOV Radius", "Adjust FOV", 300, 50, 120, function(value)
+    FOV = value
+    FOVCircle.Radius = value
+end)
 
-AimbotTab:CreateDropdown({
-    Name = "Aim Part",
-    Options = { "Head", "Torso" },
-    CurrentOption = "Head",
-    Callback = function(Value)
-        AimbotPart = Value
-    end,
-})
+-- ESP UI
+VisualsSection:NewToggle("Enable ESP", "Toggle ESP boxes", false, function(value)
+    ESPEnabled = value
+    if value then
+        EnableESP()
+    else
+        DisableESP()
+    end
+end)
 
-AimbotTab:CreateSlider({
-    Name = "Smoothness",
-    Range = {0.1, 1},
-    Increment = 0.05,
-    Suffix = "",
-    CurrentValue = 0.2,
-    Callback = function(Value)
-        Smoothness = Value
-    end,
-})
-
-AimbotTab:CreateSlider({
-    Name = "FOV Radius",
-    Range = {50, 300},
-    Increment = 10,
-    Suffix = "",
-    CurrentValue = 120,
-    Callback = function(Value)
-        FOV = Value
-    end,
-})
-
--- Visuals Toggles
-VisualsTab:CreateToggle({
-    Name = "Enable ESP",
-    CurrentValue = false,
-    Callback = function(Value)
-        ESPEnabled = Value
-        if Value then
-            EnableESP()
-        else
-            DisableESP()
-        end
-    end,
-})
-
-VisualsTab:CreateColorPicker({
-    Name = "ESP Color (Box)",
-    Color = Color3.fromRGB(0, 255, 0),
-    Callback = function(Color)
-        for _, highlight in pairs(Highlights) do
-            highlight.FillColor = Color
-        end
-    end,
-})
-
-Rayfield:LoadConfiguration()
+VisualsSection:NewColorPicker("ESP Color", "Pick ESP color", Color3.fromRGB(0, 255, 0), function(color)
+    for _, highlight in pairs(Highlights) do
+        highlight.FillColor = color
+    end
+end)
